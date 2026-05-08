@@ -272,9 +272,13 @@ class SignTrainer {
     input.dispose();
     const maxIdx = probs.indexOf(Math.max(...probs));
     const conf   = probs[maxIdx];
-    return conf >= 0.65
-      ? { sign: this._classes[maxIdx], confidence: conf }
-      : null;
+    if (conf < 0.65) return null;
+    const rawSign = this._classes[maxIdx];
+    /* Translate WLASL English gloss → French when using server model */
+    const sign = (this._serverModel && window.translateASLtoFrench)
+      ? window.translateASLtoFrench(rawSign)
+      : rawSign;
+    return { sign, confidence: conf };
   }
 
   /* ── Persistance ─────────────────────────────────────── */
