@@ -18,6 +18,7 @@ ml/data/*.csv
 ml/data/*.json
 ml/data/videos/
 ml/data/sts_videos/
+ml/data/wlasl_videos/
 
 # Misc
 .DS_Store
