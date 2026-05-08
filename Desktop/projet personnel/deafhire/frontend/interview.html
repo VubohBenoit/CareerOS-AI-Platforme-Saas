@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entretien en cours — DeafHire</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/interview.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="interview-body">
+
+  <!-- ── TOP BAR ── -->
+  <header class="interview-topbar">
+    <div class="topbar-left">
+      <a href="dashboard.html" class="back-link">
+        <i data-lucide="chevron-left" class="icon icon-sm"></i> DeafHire
+      </a>
+      <div class="session-info">
+        <span class="session-id" id="session-id-display">Session #—</span>
+        <span class="session-status" id="session-status">
+          <span class="status-dot"></span> En attente…
+        </span>
+      </div>
+    </div>
+    <div class="topbar-center">
+      <i data-lucide="clock" class="icon icon-sm" style="color:rgba(255,255,255,.4)"></i>
+      <div class="interview-timer" id="timer">00:00</div>
+    </div>
+    <div class="topbar-right">
+      <button class="ctrl-btn ctrl-btn--warn" id="btn-end" onclick="endInterview()">
+        <i data-lucide="phone-off" class="icon icon-sm"></i> Terminer
+      </button>
+    </div>
+  </header>
+
+  <!-- ── INTERVIEW ROOM ── -->
+  <div class="interview-room">
+
+    <!-- ── COL GAUCHE : Candidat ── -->
+    <section class="panel panel--candidate" id="panel-candidate">
+      <div class="panel-label">
+        <span class="role-badge role-badge--candidate">
+          <i data-lucide="user" class="icon icon-xs"></i> Candidat
+        </span>
+        <span class="detection-indicator" id="detection-indicator">
+          <span class="pulse"></span>
+          <i data-lucide="scan-eye" class="icon icon-xs"></i> Détection LSF active
+        </span>
+      </div>
+
+      <!-- Vidéo + canvas overlay -->
+      <div class="video-wrapper">
+        <video id="candidate-video" autoplay playsinline muted></video>
+        <!-- remote-video: shown here when role=recruiter (candidate's WebRTC stream) -->
+        <video id="remote-video" autoplay playsinline class="remote-video-overlay" style="display:none"></video>
+        <canvas id="sign-canvas"></canvas>
+        <div class="video-placeholder" id="video-placeholder">
+          <div class="placeholder-icon-wrap">
+            <i data-lucide="video-off" class="placeholder-svg-icon"></i>
+          </div>
+          <p>Caméra non activée</p>
+          <button class="btn btn-primary btn-sm" onclick="startCamera()">
+            <i data-lucide="video" class="icon icon-xs"></i> Activer la caméra
+          </button>
+        </div>
+        <div class="confidence-bar-wrap" id="confidence-wrap" hidden>
+          <i data-lucide="activity" class="icon icon-xs" style="color:rgba(255,255,255,.5)"></i>
+          <span class="confidence-label">Confiance</span>
+          <div class="confidence-bar">
+            <div class="confidence-fill" id="confidence-fill"></div>
+          </div>
+          <span id="confidence-value">0%</span>
+        </div>
+      </div>
+
+      <!-- Détection courante -->
+      <div class="detected-sign-box" id="detected-sign-box">
+        <div class="detected-sign-label">
+          <i data-lucide="hand" class="icon icon-xs"></i> Signe détecté :
+        </div>
+        <div class="detected-sign-text" id="detected-sign-text">—</div>
+        <button class="btn btn-sm btn-primary" id="btn-send-sign" onclick="confirmSign()" disabled>
+          <i data-lucide="check-circle" class="icon icon-xs"></i> Confirmer &amp; envoyer
+        </button>
+      </div>
+    </section>
+
+    <!-- ── COL CENTRE : Conversation ── -->
+    <section class="panel panel--chat">
+      <div class="panel-label">
+        <span class="role-badge">
+          <i data-lucide="message-circle" class="icon icon-xs"></i> Conversation
+        </span>
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-system-msg">
+          <i data-lucide="info" class="icon icon-xs"></i>
+          Entretien démarré. La traduction LSF ↔ Texte est active.
+        </div>
+      </div>
+
+      <!-- Zone d'input -->
+      <div class="chat-input-area" id="chat-input-area">
+        <div class="input-row">
+          <button class="mic-btn" id="mic-btn" title="Reconnaissance vocale" onclick="toggleMic()">
+            <i data-lucide="mic" class="icon icon-md"></i>
+          </button>
+          <input
+            type="text"
+            id="recruiter-input"
+            class="chat-input"
+            placeholder="Tapez votre message…"
+            onkeydown="handleInputKey(event)"
+          />
+          <button class="send-btn" onclick="sendRecruiterMessage()">
+            <i data-lucide="send-horizontal" class="icon icon-sm"></i>
+          </button>
+        </div>
+        <div class="input-hint" id="mic-status">
+          <i data-lucide="mic" class="icon icon-xs"></i>
+          Cliquez sur le micro pour dicter vocalement
+        </div>
+      </div>
+    </section>
+
+    <!-- ── COL DROITE : Recruteur ── -->
+    <section class="panel panel--recruiter" id="panel-recruiter">
+      <div class="panel-label">
+        <span class="role-badge role-badge--recruiter">
+          <i data-lucide="mic" class="icon icon-xs"></i> Recruteur
+        </span>
+      </div>
+
+      <!-- Vidéo recruteur (local) + remote pour candidat -->
+      <div class="recruiter-video-wrapper">
+        <video id="recruiter-video" autoplay playsinline muted></video>
+        <div class="video-placeholder" id="recruiter-video-placeholder">
+          <div class="placeholder-icon-wrap">
+            <i data-lucide="video-off" class="placeholder-svg-icon"></i>
+          </div>
+          <p>Caméra recruteur non activée</p>
+          <button class="btn btn-primary btn-sm" onclick="startCamera()">
+            <i data-lucide="video" class="icon icon-xs"></i> Activer la caméra
+          </button>
+        </div>
+      </div>
+
+      <!-- Affichage LSF pour candidat -->
+      <div class="sign-display-box" id="sign-display-box">
+        <div class="sign-display-title">
+          <i data-lucide="hand" class="icon icon-xs"></i> Message pour le candidat :
+        </div>
+        <div class="sign-display-text" id="sign-display-text">—</div>
+        <div class="sign-chips-wrap" id="sign-chips">
+          <span class="sign-chip-empty">En attente d'un message…</span>
+        </div>
+        <div class="sign-hint">
+          <i data-lucide="lightbulb" class="icon icon-xs"></i>
+          Les mots-clés en LSF sont mis en évidence pour guider le candidat.
+        </div>
+      </div>
+
+      <!-- Suggestions de questions -->
+      <div class="suggestions-box">
+        <div class="suggestions-title">
+          <i data-lucide="list-checks" class="icon icon-xs"></i> Questions suggérées :
+        </div>
+        <button class="suggestion-btn" onclick="sendSuggestion(this)">
+          <i data-lucide="user-round" class="icon icon-xs"></i> Parlez-moi de vous.
+        </button>
+        <button class="suggestion-btn" onclick="sendSuggestion(this)">
+          <i data-lucide="briefcase" class="icon icon-xs"></i> Quelle est votre expérience ?
+        </button>
+        <button class="suggestion-btn" onclick="sendSuggestion(this)">
+          <i data-lucide="target" class="icon icon-xs"></i> Pourquoi ce poste vous intéresse ?
+        </button>
+        <button class="suggestion-btn" onclick="sendSuggestion(this)">
+          <i data-lucide="star" class="icon icon-xs"></i> Quels sont vos points forts ?
+        </button>
+        <button class="suggestion-btn" onclick="sendSuggestion(this)">
+          <i data-lucide="trending-up" class="icon icon-xs"></i> Où vous voyez-vous dans 5 ans ?
+        </button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ── BOTTOM CONTROLS ── -->
+  <footer class="interview-controls">
+    <div class="controls-left">
+      <button class="ctrl-btn" id="btn-camera" onclick="toggleCamera()" title="Caméra">
+        <i data-lucide="video" class="icon icon-sm"></i> Caméra
+      </button>
+      <button class="ctrl-btn" id="btn-detection" onclick="toggleDetection()" title="Détection LSF">
+        <i data-lucide="hand" class="icon icon-sm"></i> Détection
+      </button>
+    </div>
+    <div class="controls-center">
+      <div class="latency-info">
+        <i data-lucide="activity" class="icon icon-xs"></i>
+        Latence IA : <strong id="latency-value">—</strong> ms
+      </div>
+    </div>
+    <div class="controls-right">
+      <button class="ctrl-btn ctrl-btn--ai" id="btn-trainer" onclick="openTrainer()" title="Entraîner la détection IA">
+        <i data-lucide="brain" class="icon icon-sm"></i> IA
+        <span class="ai-badge" id="ai-badge" style="display:none">✓</span>
+      </button>
+      <button class="ctrl-btn" onclick="downloadTranscript()">
+        <i data-lucide="file-down" class="icon icon-sm"></i> Transcript
+      </button>
+    </div>
+  </footer>
+
+  <!-- ── MODAL ENTRAÎNEUR IA ── -->
+  <div class="modal-overlay trainer-overlay" id="trainer-modal">
+    <div class="modal trainer-modal">
+
+      <div class="modal-header">
+        <h3><i data-lucide="brain" class="icon icon-md" style="color:#A78BFA"></i> Entraîner la détection LSF</h3>
+        <button class="modal-close" onclick="closeTrainer()"><i data-lucide="x" class="icon icon-md"></i></button>
+      </div>
+
+      <div class="modal-body" style="gap:20px">
+
+        <!-- Statut modèle -->
+        <div class="trainer-status-row" id="trainer-status-row">
+          <div class="trainer-dot" id="trainer-dot"></div>
+          <span id="trainer-status-text">Modèle non entraîné — détection par règles géométriques</span>
+        </div>
+
+        <!-- Enregistrement -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:.8rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em">
+            1. Enregistrez des exemples
+          </div>
+          <p style="font-size:.82rem;color:var(--text-secondary)">
+            Sélectionnez un signe, placez votre main devant la caméra, puis cliquez sur Enregistrer.
+            Minimum <strong>10 exemples</strong> par signe, <strong>2 signes</strong> minimum.
+          </p>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="train-sign-select" style="flex:1;min-width:160px;padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:.875rem" onchange="_updateSignGuide(this.value)">
+              <option value="">— Choisir un signe —</option>
+            </select>
+            <button class="btn btn-primary" id="btn-record" onclick="startRecording()">
+              <i data-lucide="circle-dot" class="icon icon-sm"></i> Enregistrer (3 s)
+            </button>
+            <span id="record-countdown" style="font-size:.875rem;font-weight:700;color:var(--primary);min-width:28px"></span>
+          </div>
+
+          <!-- Guide visuel du signe sélectionné -->
+          <div class="sign-guide-card" id="sign-guide-card" hidden>
+            <div class="sign-guide-svg" id="sign-guide-svg"></div>
+            <div class="sign-guide-info">
+              <div class="sign-guide-name" id="sign-guide-name"></div>
+              <div class="sign-guide-desc" id="sign-guide-desc"></div>
+              <div class="sign-guide-tags" id="sign-guide-tags"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats par signe -->
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:.8rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em">
+            Exemples enregistrés
+          </div>
+          <div class="trainer-grid" id="trainer-stats-grid"></div>
+        </div>
+
+        <!-- Entraînement -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:.8rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em">
+            2. Entraînez le modèle
+          </div>
+          <div class="trainer-progress-wrap" id="trainer-progress-wrap" style="display:none">
+            <div class="trainer-progress-bar" id="trainer-progress-bar"></div>
+            <span id="trainer-progress-label">0 / 80 epochs</span>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary" id="btn-train" onclick="trainModel()" disabled>
+              <i data-lucide="zap" class="icon icon-sm"></i> Entraîner le modèle
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="clearAllSigns()">
+              <i data-lucide="trash-2" class="icon icon-sm"></i> Tout effacer
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="exportDataset()" title="Sauvegarder les données en JSON">
+              <i data-lucide="download" class="icon icon-sm"></i> Exporter
+            </button>
+            <label class="btn btn-ghost btn-sm" style="cursor:pointer" title="Charger des données JSON">
+              <i data-lucide="upload" class="icon icon-sm"></i> Importer
+              <input type="file" accept=".json" style="display:none" onchange="importDataset(this)">
+            </label>
+          </div>
+          <div id="train-result" style="font-size:.85rem;display:none"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL FIN D'ENTRETIEN ── -->
+  <div class="modal-overlay" id="end-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>
+          <i data-lucide="flag" class="icon icon-md" style="color:var(--danger)"></i>
+          Terminer l'entretien
+        </h3>
+        <button class="modal-close" onclick="document.getElementById('end-modal').classList.remove('active')">
+          <i data-lucide="x" class="icon icon-md"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="end-summary">
+          <div class="end-stat">
+            <i data-lucide="clock" class="icon icon-sm" style="color:var(--primary)"></i>
+            <div>
+              <span>Durée</span>
+              <strong id="final-duration">—</strong>
+            </div>
+          </div>
+          <div class="end-stat">
+            <i data-lucide="message-circle" class="icon icon-sm" style="color:var(--accent)"></i>
+            <div>
+              <span>Messages échangés</span>
+              <strong id="final-messages">—</strong>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:1rem">
+          <label>
+            <i data-lucide="pen-line" class="icon icon-xs"></i> Note sur l'entretien
+          </label>
+          <textarea id="interview-notes" rows="3" placeholder="Observations, points notables…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>
+            <i data-lucide="check-square" class="icon icon-xs"></i> Décision
+          </label>
+          <select id="interview-decision">
+            <option value="">Sélectionner…</option>
+            <option value="retained">Retenu(e)</option>
+            <option value="pending">En attente</option>
+            <option value="rejected">Non retenu(e)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="document.getElementById('end-modal').classList.remove('active')">
+          Annuler
+        </button>
+        <button class="btn btn-primary" onclick="saveAndExit()">
+          <i data-lucide="save" class="icon icon-sm"></i> Enregistrer et quitter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ws-client.js"></script>
+  <script src="js/gesture-model.js"></script>
+  <script src="js/sign-detector.js"></script>
+  <script src="js/sign-trainer.js"></script>
+  <script src="js/speech.js"></script>
+  <script src="js/avatar.js"></script>
+  <script src="js/interview.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

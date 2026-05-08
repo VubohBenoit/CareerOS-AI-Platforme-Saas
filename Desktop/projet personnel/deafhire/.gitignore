@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.env
+
+# ML models & data (fichiers lourds — générer en local)
+ml/model/*.pkl
+ml/model/*.onnx
+ml/model/*.keras
+ml/model/*.h5
+ml/model/tfjs_model/
+ml/model/report.txt
+ml/data/*.csv
+ml/data/*.json
+ml/data/videos/
+ml/data/sts_videos/
+
+# Misc
+.DS_Store
+*.log
+node_modules/
+dist/
+.idea/
+.vscode/settings.json

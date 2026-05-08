@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tableau de bord — DeafHire</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="dashboard-body">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <a href="index.html">
+        <div class="logo-mark logo-mark--sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 6.5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h3"/>
+            <path d="M13 10.5V8a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-3"/>
+            <path d="M8 16a5 5 0 0 0 8 0"/>
+          </svg>
+        </div>
+        <span class="logo-text">Deaf<strong>Hire</strong></span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sidebar-link active">
+        <i data-lucide="layout-dashboard" class="icon icon-sm"></i> Tableau de bord
+      </a>
+      <a href="interviews.html" class="sidebar-link">
+        <i data-lucide="calendar" class="icon icon-sm"></i> Entretiens
+      </a>
+      <a href="candidates.html" class="sidebar-link">
+        <i data-lucide="users" class="icon icon-sm"></i> Candidats
+      </a>
+      <a href="reports.html" class="sidebar-link">
+        <i data-lucide="bar-chart-2" class="icon icon-sm"></i> Rapports
+      </a>
+      <a href="settings.html" class="sidebar-link">
+        <i data-lucide="settings" class="icon icon-sm"></i> Paramètres
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebar-avatar">R</div>
+      <div class="user-info">
+        <strong id="sidebar-name">Recruteur</strong>
+        <span id="sidebar-company">DeafHire</span>
+      </div>
+      <button class="logout-btn" onclick="Auth.logout()" title="Se déconnecter">
+        <i data-lucide="log-out" class="icon icon-sm"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="dashboard-main">
+
+    <!-- Header -->
+    <header class="dash-header">
+      <div>
+        <h1>Tableau de bord</h1>
+        <p class="dash-subtitle">Gérez vos entretiens inclusifs</p>
+      </div>
+      <button class="btn btn-primary" id="btn-new-interview" onclick="openCreateModal()">
+        <i data-lucide="plus" class="icon icon-sm"></i> Nouvel entretien
+      </button>
+    </header>
+
+    <!-- Stats -->
+    <div class="dash-stats">
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:#EDE9FE;color:#7C3AED">
+          <i data-lucide="calendar-check" class="icon icon-lg"></i>
+        </div>
+        <div>
+          <strong class="stat-card-value" id="stat-today">—</strong>
+          <span class="stat-card-label">Aujourd'hui</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:#D1FAE5;color:#059669">
+          <i data-lucide="check-circle-2" class="icon icon-lg"></i>
+        </div>
+        <div>
+          <strong class="stat-card-value" id="stat-month">—</strong>
+          <span class="stat-card-label">Ce mois</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:#FEF3C7;color:#D97706">
+          <i data-lucide="clock" class="icon icon-lg"></i>
+        </div>
+        <div>
+          <strong class="stat-card-value" id="stat-pending">—</strong>
+          <span class="stat-card-label">En attente</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:#D1FAE5;color:#059669">
+          <i data-lucide="user-check" class="icon icon-lg"></i>
+        </div>
+        <div>
+          <strong class="stat-card-value" id="stat-completed">—</strong>
+          <span class="stat-card-label">Terminés</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming interviews -->
+    <section class="dash-section">
+      <div class="dash-section-header">
+        <h2>Entretiens à venir</h2>
+        <span class="badge-count" id="upcoming-count">0</span>
+      </div>
+      <div class="interview-list" id="upcoming-list">
+        <div class="empty-state" id="upcoming-empty">
+          <i data-lucide="calendar-x" class="icon icon-xl" style="color:var(--text-muted)"></i>
+          <p>Aucun entretien à venir.<br>Créez-en un avec le bouton ci-dessus.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Past interviews -->
+    <section class="dash-section">
+      <div class="dash-section-header">
+        <h2>Entretiens passés</h2>
+        <span class="badge-count" id="past-count">0</span>
+      </div>
+      <table class="past-table" id="past-table" style="display:none">
+        <thead>
+          <tr>
+            <th>Candidat</th>
+            <th>Poste</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="past-list"></tbody>
+      </table>
+      <div class="empty-state" id="past-empty">
+        <i data-lucide="inbox" class="icon icon-xl" style="color:var(--text-muted)"></i>
+        <p>Aucun entretien terminé pour le moment.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── MODAL : Créer entretien (2 étapes) ── -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeCreateModal()">
+    <div class="modal modal--wide" onclick="event.stopPropagation()">
+
+      <!-- Étape 1 : Formulaire -->
+      <div id="modal-step-1">
+        <div class="modal-header">
+          <h3>
+            <i data-lucide="calendar-plus" class="icon icon-md" style="color:var(--primary)"></i>
+            Créer un entretien
+          </h3>
+          <button class="modal-close" onclick="closeCreateModal()">
+            <i data-lucide="x" class="icon icon-md"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-two-col">
+            <div class="form-group">
+              <label><i data-lucide="user" class="icon icon-xs"></i> Nom du candidat</label>
+              <input type="text" id="candidate-name" placeholder="Ex : Marie Aubert" />
+            </div>
+            <div class="form-group">
+              <label><i data-lucide="briefcase" class="icon icon-xs"></i> Poste visé</label>
+              <input type="text" id="candidate-role" placeholder="Ex : Développeuse Front-End" />
+            </div>
+          </div>
+          <div class="modal-two-col">
+            <div class="form-group">
+              <label><i data-lucide="calendar" class="icon icon-xs"></i> Date et heure</label>
+              <input type="datetime-local" id="interview-date" />
+            </div>
+            <div class="form-group">
+              <label><i data-lucide="mail" class="icon icon-xs"></i> E-mail du candidat</label>
+              <input type="email" id="candidate-email" placeholder="candidat@email.com" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label><i data-lucide="building-2" class="icon icon-xs"></i> Notes internes (optionnel)</label>
+            <input type="text" id="interview-notes-pre" placeholder="Ex : Entretien technique — niveau senior" />
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="lsf-enabled" checked />
+            <label for="lsf-enabled">
+              <i data-lucide="hand" class="icon icon-xs"></i> Activer la traduction LSF automatique
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeCreateModal()">Annuler</button>
+          <button class="btn btn-primary" id="btn-create" onclick="createInterview()">
+            <i data-lucide="send" class="icon icon-sm"></i> Créer et générer les liens
+          </button>
+        </div>
+      </div>
+
+      <!-- Étape 2 : Confirmation -->
+      <div id="modal-step-2" style="display:none">
+        <div class="modal-header" style="border-bottom:none;padding-bottom:8px">
+          <div class="session-created-header">
+            <div class="session-created-icon">
+              <i data-lucide="check-circle-2" class="icon icon-xl" style="color:var(--success)"></i>
+            </div>
+            <div>
+              <h3 style="color:var(--success)">Entretien créé !</h3>
+              <p style="font-size:.85rem;color:var(--text-secondary);font-weight:400">
+                Session <strong id="confirm-session-id">—</strong> · <span id="confirm-name">—</span>
+              </p>
+            </div>
+          </div>
+          <button class="modal-close" onclick="closeCreateModal()">
+            <i data-lucide="x" class="icon icon-md"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="email-status" id="email-status" style="display:none">
+            <i data-lucide="mail-check" class="icon icon-sm"></i>
+            <span id="email-status-text">Invitation envoyée par e-mail</span>
+          </div>
+          <div class="link-box">
+            <div class="link-box-label">
+              <i data-lucide="user" class="icon icon-xs"></i> Lien candidat
+              <span class="link-box-hint">(à envoyer au candidat)</span>
+            </div>
+            <div class="link-copy-row">
+              <input type="text" id="link-candidate" class="link-input" readonly />
+              <button class="btn btn-outline btn-sm" onclick="copyField('link-candidate', this)">
+                <i data-lucide="copy" class="icon icon-xs"></i> Copier
+              </button>
+            </div>
+          </div>
+          <div class="link-box link-box--recruiter">
+            <div class="link-box-label">
+              <i data-lucide="mic" class="icon icon-xs"></i> Votre lien recruteur
+            </div>
+            <div class="link-copy-row">
+              <input type="text" id="link-recruiter" class="link-input" readonly />
+              <button class="btn btn-outline btn-sm" onclick="copyField('link-recruiter', this)">
+                <i data-lucide="copy" class="icon icon-xs"></i> Copier
+              </button>
+            </div>
+          </div>
+          <div class="session-code-box">
+            <span class="session-code-label">
+              <i data-lucide="hash" class="icon icon-xs"></i> Code de session
+            </span>
+            <span class="session-code-value" id="confirm-code">—</span>
+            <button class="btn-copy-code" onclick="copyCode()" title="Copier le code">
+              <i data-lucide="copy" class="icon icon-xs"></i>
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeCreateModal()">
+            <i data-lucide="x" class="icon icon-xs"></i> Fermer
+          </button>
+          <button class="btn btn-primary" id="btn-start-now" onclick="startNow()">
+            <i data-lucide="play" class="icon icon-sm"></i> Démarrer maintenant
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOAST ── -->
+  <div class="toast" id="toast"></div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+    Auth.requireAuth();
+
+    /* Populate user info */
+    const user = Auth.getUser();
+    if (user) {
+      const initials = (user.name || 'R').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+      document.getElementById('sidebar-avatar').textContent  = initials;
+      document.getElementById('sidebar-name').textContent    = user.name    || 'Recruteur';
+      document.getElementById('sidebar-company').textContent = user.company || 'DeafHire';
+    }
+
+    let _currentSessionId = null;
+
+    /* ── Load real sessions from API ── */
+    async function loadDashboard() {
+      try {
+        const res = await fetch(`${Auth.API_BASE}/sessions`, { headers: Auth.headers() });
+        if (!res.ok) throw new Error('API error');
+        const sessions = await res.json();
+        renderDashboard(sessions);
+      } catch {
+        /* API unavailable — show empty state with no crash */
+        renderDashboard([]);
+      }
+    }
+
+    function renderDashboard(sessions) {
+      const today    = new Date().toDateString();
+      const nowMonth = new Date().getMonth();
+      const nowYear  = new Date().getFullYear();
+
+      const upcoming = sessions.filter(s => s.status === 'pending' || s.status === 'active');
+      const past     = sessions.filter(s => s.status === 'completed' || s.status === 'rejected');
+
+      const todayCount     = sessions.filter(s => new Date(s.created_at).toDateString() === today).length;
+      const monthCount     = sessions.filter(s => {
+        const d = new Date(s.created_at);
+        return d.getMonth() === nowMonth && d.getFullYear() === nowYear;
+      }).length;
+      const pendingCount   = upcoming.length;
+      const completedCount = past.length;
+
+      document.getElementById('stat-today').textContent     = todayCount;
+      document.getElementById('stat-month').textContent     = monthCount;
+      document.getElementById('stat-pending').textContent   = pendingCount;
+      document.getElementById('stat-completed').textContent = completedCount;
+
+      /* Upcoming */
+      const upcomingList  = document.getElementById('upcoming-list');
+      const upcomingEmpty = document.getElementById('upcoming-empty');
+      document.getElementById('upcoming-count').textContent = upcoming.length;
+
+      if (upcoming.length === 0) {
+        upcomingEmpty.style.display = 'flex';
+      } else {
+        upcomingEmpty.style.display = 'none';
+        upcoming.forEach(s => {
+          const card = _buildUpcomingCard(s);
+          upcomingList.appendChild(card);
+        });
+      }
+
+      /* Past */
+      const pastList  = document.getElementById('past-list');
+      const pastTable = document.getElementById('past-table');
+      const pastEmpty = document.getElementById('past-empty');
+      document.getElementById('past-count').textContent = past.length;
+
+      if (past.length === 0) {
+        pastEmpty.style.display = 'flex';
+        pastTable.style.display = 'none';
+      } else {
+        pastEmpty.style.display = 'none';
+        pastTable.style.display = 'table';
+        past.forEach(s => {
+          const row = _buildPastRow(s);
+          pastList.appendChild(row);
+        });
+      }
+
+      lucide.createIcons();
+    }
+
+    function _buildUpcomingCard(s) {
+      const initials  = s.candidate_name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+      const dateLabel = s.scheduled_at
+        ? new Date(s.scheduled_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })
+        : 'Non planifié';
+      const urgent = !s.scheduled_at || new Date(s.scheduled_at) < new Date(Date.now() + 3600000);
+
+      const card = document.createElement('div');
+      card.className = `interview-card${urgent ? ' interview-card--urgent' : ''}`;
+      card.id = `card-${s.session_id}`;
+      card.innerHTML = `
+        <div class="interview-card-left">
+          <div class="candidate-avatar">${initials}</div>
+          <div>
+            <strong>${s.candidate_name}</strong>
+            <span class="interview-role">${s.candidate_role}</span>
+          </div>
+        </div>
+        <div class="interview-card-center">
+          <span class="tag tag--lsf">
+            <i data-lucide="hand" class="icon icon-xs"></i> LSF activée
+          </span>
+          <span class="interview-time">
+            <i data-lucide="clock" class="icon icon-xs"></i> ${dateLabel}
+          </span>
+        </div>
+        <div class="interview-card-right">
+          <button class="btn btn-primary btn-sm" onclick="startInterview('${s.session_id}')">
+            <i data-lucide="play" class="icon icon-xs"></i> Démarrer
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="copyLink('${s.session_id}')">
+            <i data-lucide="copy" class="icon icon-xs"></i> Lien
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="viewSession('${s.session_id}')">
+            <i data-lucide="eye" class="icon icon-xs"></i>
+          </button>
+        </div>
+      `;
+      return card;
+    }
+
+    function _buildPastRow(s) {
+      const dateStr = new Date(s.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+      const statusMap = {
+        completed: `<span class="badge-status badge-status--ok"><i data-lucide="check" class="icon icon-xs"></i> Terminé</span>`,
+        rejected:  `<span class="badge-status badge-status--no"><i data-lucide="x" class="icon icon-xs"></i> Annulé</span>`,
+      };
+      const decisionMap = {
+        retained: `<span class="badge-status badge-status--ok">Retenu(e)</span>`,
+        pending:  `<span class="badge-status badge-status--wait">En attente</span>`,
+        rejected: `<span class="badge-status badge-status--no">Non retenu(e)</span>`,
+      };
+      const initials = s.candidate_name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+      const statusBadge   = statusMap[s.status]       || `<span class="badge-status">${s.status}</span>`;
+      const decisionBadge = s.decision ? (decisionMap[s.decision] || '') : '—';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><div class="mini-avatar">${initials}</div> ${s.candidate_name}</td>
+        <td>${s.candidate_role}</td>
+        <td>${dateStr}</td>
+        <td>${decisionBadge}</td>
+        <td style="display:flex;gap:6px;align-items:center">
+          <button class="btn btn-ghost btn-sm" onclick="viewSession('${s.session_id}')">
+            <i data-lucide="eye" class="icon icon-xs"></i> Voir
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="downloadSessionTranscript('${s.session_id}')">
+            <i data-lucide="download" class="icon icon-xs"></i>
+          </button>
+        </td>
+      `;
+      return tr;
+    }
+
+    /* ── Add interview card to upcoming list (after creation) ── */
+    function addInterviewCard(id, name, role, dateLabel) {
+      const upcomingEmpty = document.getElementById('upcoming-empty');
+      upcomingEmpty.style.display = 'none';
+
+      const initials = name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+      const list     = document.getElementById('upcoming-list');
+      const count    = document.getElementById('upcoming-count');
+
+      const card = document.createElement('div');
+      card.className = 'interview-card interview-card--urgent interview-card--new';
+      card.id = `card-${id}`;
+      card.innerHTML = `
+        <div class="interview-card-left">
+          <div class="candidate-avatar">${initials}</div>
+          <div>
+            <strong>${name}</strong>
+            <span class="interview-role">${role}</span>
+          </div>
+        </div>
+        <div class="interview-card-center">
+          <span class="tag tag--lsf">
+            <i data-lucide="hand" class="icon icon-xs"></i> LSF activée
+          </span>
+          <span class="interview-time">
+            <i data-lucide="clock" class="icon icon-xs"></i> ${dateLabel}
+          </span>
+        </div>
+        <div class="interview-card-right">
+          <button class="btn btn-primary btn-sm" onclick="startInterview('${id}')">
+            <i data-lucide="play" class="icon icon-xs"></i> Démarrer
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="copyLink('${id}')">
+            <i data-lucide="copy" class="icon icon-xs"></i> Lien
+          </button>
+        </div>
+      `;
+
+      /* Insert before first static card if any */
+      const firstCard = list.querySelector('.interview-card');
+      if (firstCard) list.insertBefore(card, firstCard);
+      else list.appendChild(card);
+
+      lucide.createIcons();
+      requestAnimationFrame(() => card.classList.add('card-appear'));
+
+      if (count) count.textContent = parseInt(count.textContent || '0') + 1;
+
+      /* Update stat-pending */
+      const statEl = document.getElementById('stat-pending');
+      if (statEl) statEl.textContent = parseInt(statEl.textContent || '0') + 1;
+    }
+
+    /* ── Modal ── */
+    function openCreateModal() {
+      resetModal();
+      document.getElementById('modal-overlay').classList.add('active');
+    }
+
+    function closeCreateModal() {
+      document.getElementById('modal-overlay').classList.remove('active');
+      setTimeout(resetModal, 300);
+    }
+
+    function resetModal() {
+      document.getElementById('modal-step-1').style.display = 'block';
+      document.getElementById('modal-step-2').style.display = 'none';
+      ['candidate-name','candidate-role','candidate-email','interview-date','interview-notes-pre'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      document.getElementById('lsf-enabled').checked = true;
+      const btn = document.getElementById('btn-create');
+      btn.disabled  = false;
+      btn.innerHTML = '<i data-lucide="send" class="icon icon-sm"></i> Créer et générer les liens';
+      lucide.createIcons();
+    }
+
+    /* ── Create interview ── */
+    async function createInterview() {
+      const name  = document.getElementById('candidate-name').value.trim();
+      const role  = document.getElementById('candidate-role').value.trim();
+      const email = document.getElementById('candidate-email').value.trim();
+      const date  = document.getElementById('interview-date').value;
+      const lsf   = document.getElementById('lsf-enabled').checked;
+
+      if (!name) { showToast('Veuillez entrer le nom du candidat', 'error'); return; }
+      if (!role) { showToast('Veuillez entrer le poste visé',      'error'); return; }
+
+      const btn = document.getElementById('btn-create');
+      btn.disabled  = true;
+      btn.innerHTML = '<i data-lucide="loader" class="icon icon-sm spin"></i> Création en cours…';
+      lucide.createIcons();
+
+      let sessionId, emailSent = false;
+
+      try {
+        const res = await fetch(`${Auth.API_BASE}/sessions`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', ...Auth.headers() },
+          body: JSON.stringify({
+            candidate_name:  name,
+            candidate_role:  role,
+            candidate_email: email || null,
+            scheduled_at:    date  || null,
+            lsf_enabled:     lsf,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          sessionId = data.session_id;
+          emailSent = !!email;
+        } else throw new Error('API error');
+      } catch {
+        sessionId = 'INT-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+        emailSent = false;
+      }
+
+      _currentSessionId = sessionId;
+
+      const dateLabel = date
+        ? new Date(date).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })
+        : 'Non planifié';
+
+      const base          = location.origin + location.pathname.replace('dashboard.html', '');
+      const candidateLink = `${base}join.html?session=${sessionId}`;
+      const recruiterLink = `${base}interview.html?role=recruiter&session=${sessionId}`;
+
+      document.getElementById('confirm-session-id').textContent = sessionId;
+      document.getElementById('confirm-name').textContent       = `${name} — ${dateLabel}`;
+      document.getElementById('confirm-code').textContent       = sessionId;
+      document.getElementById('link-candidate').value           = candidateLink;
+      document.getElementById('link-recruiter').value           = recruiterLink;
+
+      const emailBox  = document.getElementById('email-status');
+      const emailText = document.getElementById('email-status-text');
+      if (email) {
+        emailBox.style.display  = 'flex';
+        emailText.textContent   = emailSent
+          ? `Invitation envoyée à ${email}`
+          : `Lien à transmettre manuellement à ${email}`;
+        emailBox.className = 'email-status ' + (emailSent ? 'email-status--ok' : 'email-status--warn');
+      }
+
+      document.getElementById('modal-step-1').style.display = 'none';
+      document.getElementById('modal-step-2').style.display = 'block';
+      lucide.createIcons();
+
+      addInterviewCard(sessionId, name, role, dateLabel);
+    }
+
+    /* ── Copy helpers ── */
+    function copyField(inputId, btn) {
+      const val = document.getElementById(inputId).value;
+      navigator.clipboard.writeText(val).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="check" class="icon icon-xs"></i> Copié !';
+        btn.classList.add('btn-success-flash');
+        lucide.createIcons();
+        setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('btn-success-flash'); lucide.createIcons(); }, 2000);
+      });
+    }
+
+    function copyCode() {
+      const code = document.getElementById('confirm-code').textContent;
+      navigator.clipboard.writeText(code).then(() => showToast('Code copié !', 'success'));
+    }
+
+    function copyLink(id) {
+      const base = location.origin + location.pathname.replace('dashboard.html', '');
+      navigator.clipboard.writeText(`${base}join.html?session=${id}`).then(
+        () => showToast('Lien candidat copié !', 'success')
+      );
+    }
+
+    /* ── Navigation ── */
+    function startInterview(id) {
+      window.location.href = `interview.html?role=recruiter&session=${id}`;
+    }
+
+    function startNow() {
+      if (_currentSessionId) startInterview(_currentSessionId);
+    }
+
+    function viewSession(id) {
+      window.location.href = `session-detail.html?session=${id}`;
+    }
+
+    async function downloadSessionTranscript(sessionId) {
+      try {
+        const res = await fetch(`${Auth.API_BASE}/sessions/${sessionId}/transcript`, { headers: Auth.headers() });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        if (!data.entries || data.entries.length === 0) { showToast('Transcript vide', 'info'); return; }
+        const lines = [
+          `DeafHire — Transcript d'entretien`,
+          `Session : ${sessionId}`,
+          `Durée   : ${Math.floor(data.duration_seconds / 60)} min`,
+          '─'.repeat(50),
+          '',
+          ...data.entries.map(e => `[${Math.floor(e.time_sec/60).toString().padStart(2,'0')}:${(e.time_sec%60).toString().padStart(2,'0')}] ${e.role.toUpperCase()} : ${e.text}`),
+        ];
+        const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href = url; a.download = `deafhire-${sessionId}-transcript.txt`; a.click();
+        URL.revokeObjectURL(url);
+      } catch {
+        showToast('Impossible de charger le transcript', 'error');
+      }
+    }
+
+    /* ── Toast ── */
+    function showToast(msg, type) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className   = `toast toast--${type} active`;
+      setTimeout(() => t.classList.remove('active'), 3000);
+    }
+
+    /* ── Init ── */
+    loadDashboard();
+  </script>
+</body>
+</html>

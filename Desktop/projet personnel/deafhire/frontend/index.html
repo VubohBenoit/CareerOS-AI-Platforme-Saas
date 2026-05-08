@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeafHire — Entretiens inclusifs sans barrière</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 6.5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h3"/>
+            <path d="M13 10.5V8a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-3"/>
+            <path d="M8 16a5 5 0 0 0 8 0"/>
+          </svg>
+        </div>
+        <span class="logo-text">Deaf<strong>Hire</strong></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">Fonctionnalités</a></li>
+        <li><a href="#how">Comment ça marche</a></li>
+        <li><a href="#about">À propos</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="login.html" class="btn btn-outline">
+          <i data-lucide="layout-dashboard" class="icon icon-sm"></i> Recruteur
+        </a>
+        <a href="join.html" class="btn btn-primary">
+          <i data-lucide="video" class="icon icon-sm"></i> Rejoindre un entretien
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+    </div>
+    <div class="container hero-content">
+      <span class="badge">
+        <i data-lucide="accessibility" class="icon icon-xs"></i>
+        Recrutement inclusif · LSF ↔ Texte/Voix
+      </span>
+      <h1 class="hero-title">
+        Des entretiens sans<br />
+        <span class="gradient-text">barrière de communication</span>
+      </h1>
+      <p class="hero-desc">
+        DeafHire traduit en temps réel la Langue des Signes Française en texte
+        et vice-versa, permettant aux candidats sourds ou malentendants de
+        passer des entretiens sans interprète humain.
+      </p>
+      <div class="hero-actions">
+        <a href="dashboard.html" class="btn btn-primary btn-lg">
+          <i data-lucide="play-circle" class="icon icon-md"></i>
+          Démarrer en tant que recruteur
+        </a>
+        <a href="interview.html?role=candidate" class="btn btn-ghost btn-lg">
+          Je suis candidat
+          <i data-lucide="arrow-right" class="icon icon-md"></i>
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <strong>LSF</strong>
+          <span>Langue des Signes Française</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat">
+          <strong>Temps réel</strong>
+          <span>Latence &lt; 500 ms</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat">
+          <strong>Sans interprète</strong>
+          <span>IA embarquée</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Démo visuelle -->
+    <div class="container hero-demo">
+      <div class="demo-card demo-card--candidate">
+        <div class="demo-header">
+          <span class="demo-dot green"></span>
+          <span class="demo-label">
+            <i data-lucide="user" class="icon icon-xs"></i> Candidat sourd
+          </span>
+        </div>
+        <div class="demo-video-placeholder">
+          <div class="demo-hands">
+            <!-- ILY hand sign SVG -->
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="64" height="64" rx="32" fill="rgba(124,58,237,0.15)"/>
+              <path d="M20 42V28a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v7" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M26 35V24a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v11" stroke="#7C3AED" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M32 35V26a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v9" stroke="#06B6D4" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M38 35V30a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v7l-1 6H21l-1-8" stroke="#06B6D4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="demo-overlay">
+            <i data-lucide="scan-eye" class="icon icon-xs" style="color:#34D399"></i>
+            <span class="demo-detected">Détecté : <strong>"Bonjour"</strong></span>
+          </div>
+        </div>
+        <div class="demo-transcript">
+          <i data-lucide="arrow-right" class="icon icon-xs"></i>
+          "Bonjour, je suis ravi de vous rencontrer."
+        </div>
+      </div>
+
+      <div class="demo-arrow">
+        <i data-lucide="arrows-left-right" class="icon icon-xl"></i>
+      </div>
+
+      <div class="demo-card demo-card--recruiter">
+        <div class="demo-header">
+          <span class="demo-dot blue"></span>
+          <span class="demo-label">
+            <i data-lucide="mic" class="icon icon-xs"></i> Recruteur
+          </span>
+        </div>
+        <div class="demo-message">
+          <i data-lucide="message-circle" class="icon icon-sm" style="opacity:.6;margin-bottom:4px"></i>
+          <p>"Pouvez-vous me parler de votre expérience ?"</p>
+        </div>
+        <div class="demo-sign-display">
+          <span class="sign-chip">POUVEZ</span>
+          <span class="sign-chip">PARLER</span>
+          <span class="sign-chip">EXPÉRIENCE</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FEATURES ── -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-header">
+        <h2>Tout ce dont vous avez besoin</h2>
+        <p>Une plateforme pensée pour l'équité et la fluidité des échanges.</p>
+      </div>
+      <div class="features-grid">
+
+        <div class="feature-card">
+          <div class="feature-icon-box" style="background:#EDE9FE;color:#7C3AED">
+            <i data-lucide="scan-eye" class="icon icon-lg"></i>
+          </div>
+          <h3>Détection LSF en temps réel</h3>
+          <p>MediaPipe Holistic analyse les mouvements de mains, du corps et les expressions faciales frame par frame pour identifier les signes.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box" style="background:#DBEAFE;color:#2563EB">
+            <i data-lucide="mic" class="icon icon-lg"></i>
+          </div>
+          <h3>Voix → Texte → Signes</h3>
+          <p>La voix ou le texte du recruteur est simplifié et converti en représentation visuelle des signes pour le candidat.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box" style="background:#D1FAE5;color:#059669">
+            <i data-lucide="file-text" class="icon icon-lg"></i>
+          </div>
+          <h3>Transcript automatique</h3>
+          <p>Chaque échange est transcrit et archivé pour permettre un compte-rendu complet de l'entretien.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box" style="background:#FEE2E2;color:#DC2626">
+            <i data-lucide="shield-check" class="icon icon-lg"></i>
+          </div>
+          <h3>Données confidentielles</h3>
+          <p>Les données vidéo sont traitées localement (on-device). Aucune image n'est stockée sur nos serveurs.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box" style="background:#FEF3C7;color:#D97706">
+            <i data-lucide="zap" class="icon icon-lg"></i>
+          </div>
+          <h3>Latence ultra-faible</h3>
+          <p>Le traitement se fait en moins de 500 ms pour une conversation naturelle et sans délai perceptible.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box" style="background:#CFFAFE;color:#0891B2">
+            <i data-lucide="globe" class="icon icon-lg"></i>
+          </div>
+          <h3>Sans installation</h3>
+          <p>Tout fonctionne dans le navigateur. Aucun logiciel à installer, compatible sur ordinateur et tablette.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOW IT WORKS ── -->
+  <section class="how" id="how">
+    <div class="container">
+      <div class="section-header">
+        <h2>Comment ça marche</h2>
+        <p>Trois étapes pour un entretien fluide et équitable.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-icon-wrap">
+            <div class="step-number">01</div>
+            <i data-lucide="calendar-plus" class="step-icon"></i>
+          </div>
+          <div class="step-content">
+            <h3>Le recruteur crée la session</h3>
+            <p>Il génère un lien d'entretien depuis son tableau de bord et l'envoie au candidat par e-mail ou SMS.</p>
+          </div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-icon-wrap">
+            <div class="step-number">02</div>
+            <i data-lucide="video" class="step-icon"></i>
+          </div>
+          <div class="step-content">
+            <h3>Le candidat rejoint</h3>
+            <p>Il ouvre le lien dans son navigateur. La caméra est activée et la détection LSF démarre automatiquement.</p>
+          </div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+          <div class="step-icon-wrap">
+            <div class="step-number">03</div>
+            <i data-lucide="message-circle-check" class="step-icon"></i>
+          </div>
+          <div class="step-content">
+            <h3>L'entretien se déroule</h3>
+            <p>Chaque signe est traduit en texte pour le recruteur. Chaque réponse est simplifiée et visualisée pour le candidat.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-card">
+        <div class="cta-icon-badge">
+          <i data-lucide="handshake" class="icon icon-xl"></i>
+        </div>
+        <h2>Prêt à rendre vos recrutements inclusifs ?</h2>
+        <p>Rejoignez les entreprises qui font de l'accessibilité une priorité.</p>
+        <div class="cta-actions">
+          <a href="dashboard.html" class="btn btn-primary btn-lg">
+            <i data-lucide="plus-circle" class="icon icon-md"></i> Créer un entretien
+          </a>
+          <a href="interview.html?role=candidate&demo=true" class="btn btn-ghost btn-lg">
+            <i data-lucide="play" class="icon icon-md"></i> Tester la démo
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="logo-mark logo-mark--sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 6.5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h3"/>
+              <path d="M13 10.5V8a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-3"/>
+              <path d="M8 16a5 5 0 0 0 8 0"/>
+            </svg>
+          </div>
+          <span class="logo-text">Deaf<strong>Hire</strong></span>
+        </div>
+        <p>Recrutement inclusif pour tous.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Produit</h4>
+          <a href="#features">
+            <i data-lucide="sparkles" class="icon icon-xs"></i> Fonctionnalités
+          </a>
+          <a href="#how">
+            <i data-lucide="map" class="icon icon-xs"></i> Comment ça marche
+          </a>
+          <a href="dashboard.html">
+            <i data-lucide="layout-dashboard" class="icon icon-xs"></i> Tableau de bord
+          </a>
+        </div>
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="#">
+            <i data-lucide="book-open" class="icon icon-xs"></i> Documentation
+          </a>
+          <a href="#">
+            <i data-lucide="mail" class="icon icon-xs"></i> Contact
+          </a>
+          <a href="#">
+            <i data-lucide="accessibility" class="icon icon-xs"></i> Accessibilité
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>
+        <i data-lucide="copyright" class="icon icon-xs"></i>
+        2026 DeafHire — Tous droits réservés
+      </p>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="js/app.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paramètres — DeafHire</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="dashboard-body">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <a href="index.html">
+        <div class="logo-mark logo-mark--sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 6.5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h3"/>
+            <path d="M13 10.5V8a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-3"/>
+            <path d="M8 16a5 5 0 0 0 8 0"/>
+          </svg>
+        </div>
+        <span class="logo-text">Deaf<strong>Hire</strong></span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sidebar-link">
+        <i data-lucide="layout-dashboard" class="icon icon-sm"></i> Tableau de bord
+      </a>
+      <a href="interviews.html" class="sidebar-link">
+        <i data-lucide="calendar" class="icon icon-sm"></i> Entretiens
+      </a>
+      <a href="candidates.html" class="sidebar-link">
+        <i data-lucide="users" class="icon icon-sm"></i> Candidats
+      </a>
+      <a href="reports.html" class="sidebar-link">
+        <i data-lucide="bar-chart-2" class="icon icon-sm"></i> Rapports
+      </a>
+      <a href="settings.html" class="sidebar-link active">
+        <i data-lucide="settings" class="icon icon-sm"></i> Paramètres
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebar-avatar">R</div>
+      <div class="user-info">
+        <strong id="sidebar-name">Recruteur</strong>
+        <span id="sidebar-company">DeafHire</span>
+      </div>
+      <button class="logout-btn" onclick="Auth.logout()" title="Se déconnecter">
+        <i data-lucide="log-out" class="icon icon-sm"></i>
+      </button>
+    </div>
+  </aside>
+
+  <main class="dashboard-main">
+
+    <header class="dash-header">
+      <div>
+        <h1>Paramètres</h1>
+        <p class="dash-subtitle">Gérez votre compte et les préférences</p>
+      </div>
+    </header>
+
+    <!-- Profile section -->
+    <div class="dash-section detail-card" style="margin-bottom:24px">
+      <h2 style="margin-bottom:20px">
+        <i data-lucide="user-circle" class="icon icon-sm" style="color:var(--primary)"></i>
+        Profil
+      </h2>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="profile-form">
+        <div class="form-group">
+          <label>Nom complet</label>
+          <input type="text" id="field-name" placeholder="Votre nom" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="field-email" placeholder="votre@email.fr" />
+        </div>
+        <div class="form-group">
+          <label>Entreprise</label>
+          <input type="text" id="field-company" placeholder="Nom de l'entreprise" />
+        </div>
+      </div>
+
+      <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
+        <button class="btn btn-primary" onclick="saveProfile()">
+          <i data-lucide="save" class="icon icon-sm"></i> Enregistrer
+        </button>
+        <span id="profile-feedback" style="display:none;color:var(--success);font-size:.85rem">✓ Profil mis à jour</span>
+      </div>
+    </div>
+
+    <!-- Preferences section -->
+    <div class="dash-section detail-card" style="margin-bottom:24px">
+      <h2 style="margin-bottom:20px">
+        <i data-lucide="sliders-horizontal" class="icon icon-sm" style="color:var(--accent)"></i>
+        Préférences d'entretien
+      </h2>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <label class="form-check">
+          <input type="checkbox" id="pref-autoconfirm" checked />
+          Confirmation automatique des signes (après 1,5 s)
+        </label>
+        <label class="form-check">
+          <input type="checkbox" id="pref-suggestions" checked />
+          Afficher les questions suggérées pendant l'entretien
+        </label>
+        <label class="form-check">
+          <input type="checkbox" id="pref-autosave" checked />
+          Sauvegarde automatique du transcript
+        </label>
+      </div>
+
+      <div style="margin-top:16px">
+        <button class="btn btn-primary" onclick="savePrefs()">
+          <i data-lucide="save" class="icon icon-sm"></i> Enregistrer
+        </button>
+        <span id="prefs-feedback" style="display:none;margin-left:8px;color:var(--success);font-size:.85rem">✓ Enregistré</span>
+      </div>
+    </div>
+
+    <!-- Account section -->
+    <div class="dash-section detail-card">
+      <h2 style="margin-bottom:20px">
+        <i data-lucide="shield" class="icon icon-sm" style="color:var(--warning)"></i>
+        Compte
+      </h2>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="Auth.logout()">
+          <i data-lucide="log-out" class="icon icon-sm"></i> Se déconnecter
+        </button>
+        <button class="btn btn-ghost" style="color:var(--danger);border-color:var(--danger)" onclick="confirmDeleteAccount()">
+          <i data-lucide="trash-2" class="icon icon-sm"></i> Supprimer le compte
+        </button>
+      </div>
+
+      <p style="margin-top:14px;font-size:.8rem;color:var(--text-muted)">
+        La suppression du compte efface définitivement toutes vos données.
+      </p>
+    </div>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+    Auth.requireAuth();
+
+    const user = Auth.getUser();
+    if (user) {
+      const initials = (user.name || 'R').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+      document.getElementById('sidebar-avatar').textContent  = initials;
+      document.getElementById('sidebar-name').textContent    = user.name    || 'Recruteur';
+      document.getElementById('sidebar-company').textContent = user.company || 'DeafHire';
+
+      document.getElementById('field-name').value    = user.name    || '';
+      document.getElementById('field-email').value   = user.email   || '';
+      document.getElementById('field-company').value = user.company || '';
+    }
+
+    /* Load saved prefs */
+    const prefs = JSON.parse(localStorage.getItem('deafhire_prefs') || '{}');
+    if (typeof prefs.autoconfirm  !== 'undefined') document.getElementById('pref-autoconfirm').checked  = prefs.autoconfirm;
+    if (typeof prefs.suggestions  !== 'undefined') document.getElementById('pref-suggestions').checked  = prefs.suggestions;
+    if (typeof prefs.autosave     !== 'undefined') document.getElementById('pref-autosave').checked     = prefs.autosave;
+
+    function saveProfile() {
+      const name    = document.getElementById('field-name').value.trim();
+      const company = document.getElementById('field-company').value.trim();
+      const stored  = Auth.getUser() || {};
+      const updated = { ...stored, name, company };
+      localStorage.setItem(Auth.USER_KEY, JSON.stringify(updated));
+
+      document.getElementById('sidebar-name').textContent    = name    || 'Recruteur';
+      document.getElementById('sidebar-company').textContent = company || 'DeafHire';
+      const initials = (name || 'R').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+      document.getElementById('sidebar-avatar').textContent  = initials;
+
+      const fb = document.getElementById('profile-feedback');
+      fb.style.display = 'inline';
+      setTimeout(() => fb.style.display = 'none', 2500);
+    }
+
+    function savePrefs() {
+      const prefs = {
+        autoconfirm: document.getElementById('pref-autoconfirm').checked,
+        suggestions: document.getElementById('pref-suggestions').checked,
+        autosave:    document.getElementById('pref-autosave').checked,
+      };
+      localStorage.setItem('deafhire_prefs', JSON.stringify(prefs));
+
+      const fb = document.getElementById('prefs-feedback');
+      fb.style.display = 'inline';
+      setTimeout(() => fb.style.display = 'none', 2500);
+    }
+
+    function confirmDeleteAccount() {
+      if (confirm('Supprimer définitivement votre compte et toutes vos données ? Cette action est irréversible.')) {
+        Auth.logout();
+      }
+    }
+
+    function showToast(msg, type) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast toast--${type} active`;
+      setTimeout(() => t.classList.remove('active'), 3000);
+    }
+  </script>
+</body>
+</html>

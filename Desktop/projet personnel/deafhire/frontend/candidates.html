@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Candidats — DeafHire</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="dashboard-body">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <a href="index.html">
+        <div class="logo-mark logo-mark--sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 6.5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h3"/>
+            <path d="M13 10.5V8a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-3"/>
+            <path d="M8 16a5 5 0 0 0 8 0"/>
+          </svg>
+        </div>
+        <span class="logo-text">Deaf<strong>Hire</strong></span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sidebar-link">
+        <i data-lucide="layout-dashboard" class="icon icon-sm"></i> Tableau de bord
+      </a>
+      <a href="interviews.html" class="sidebar-link">
+        <i data-lucide="calendar" class="icon icon-sm"></i> Entretiens
+      </a>
+      <a href="candidates.html" class="sidebar-link active">
+        <i data-lucide="users" class="icon icon-sm"></i> Candidats
+      </a>
+      <a href="reports.html" class="sidebar-link">
+        <i data-lucide="bar-chart-2" class="icon icon-sm"></i> Rapports
+      </a>
+      <a href="settings.html" class="sidebar-link">
+        <i data-lucide="settings" class="icon icon-sm"></i> Paramètres
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebar-avatar">R</div>
+      <div class="user-info">
+        <strong id="sidebar-name">Recruteur</strong>
+        <span id="sidebar-company">DeafHire</span>
+      </div>
+      <button class="logout-btn" onclick="Auth.logout()" title="Se déconnecter">
+        <i data-lucide="log-out" class="icon icon-sm"></i>
+      </button>
+    </div>
+  </aside>
+
+  <main class="dashboard-main">
+
+    <header class="dash-header">
+      <div>
+        <h1>Candidats</h1>
+        <p class="dash-subtitle">Historique de tous vos candidats interviewés</p>
+      </div>
+    </header>
+
+    <!-- Candidates table derived from sessions -->
+    <div class="dash-section">
+      <div class="dash-section-header">
+        <h2>Tous les candidats</h2>
+        <span class="badge-count" id="total-count">0</span>
+      </div>
+
+      <div id="candidates-wrap">
+        <table class="past-table" id="candidates-table" style="display:none">
+          <thead>
+            <tr>
+              <th>Candidat</th>
+              <th>Poste</th>
+              <th>Entretien</th>
+              <th>Décision</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="candidates-body"></tbody>
+        </table>
+        <div class="empty-state" id="empty-state">
+          <i data-lucide="users" class="icon icon-2xl" style="color:var(--text-muted)"></i>
+          <p>Aucun candidat enregistré. Créez un entretien pour commencer.</p>
+          <a href="dashboard.html" class="btn btn-primary" style="margin-top:4px">
+            <i data-lucide="plus" class="icon icon-sm"></i> Créer un entretien
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+    Auth.requireAuth();
+
+    const user = Auth.getUser();
+    if (user) {
+      const initials = (user.name || 'R').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+      document.getElementById('sidebar-avatar').textContent  = initials;
+      document.getElementById('sidebar-name').textContent    = user.name    || 'Recruteur';
+      document.getElementById('sidebar-company').textContent = user.company || 'DeafHire';
+    }
+
+    const DECISION_BADGES = {
+      retained: '<span class="badge-status badge-status--ok">Retenu(e)</span>',
+      pending:  '<span class="badge-status badge-status--wait">En attente</span>',
+      rejected: '<span class="badge-status badge-status--no">Non retenu(e)</span>',
+    };
+
+    async function loadCandidates() {
+      try {
+        const res = await fetch(`${Auth.API_BASE}/sessions`, { headers: Auth.headers() });
+        if (!res.ok) throw new Error();
+        const sessions = await res.json();
+        renderCandidates(sessions);
+      } catch {
+        /* leave empty state */
+      }
+    }
+
+    function renderCandidates(sessions) {
+      if (!sessions.length) return;
+
+      document.getElementById('total-count').textContent = sessions.length;
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('candidates-table').style.display = 'table';
+
+      sessions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      const tbody = document.getElementById('candidates-body');
+      tbody.innerHTML = '';
+
+      sessions.forEach(s => {
+        const initials = s.candidate_name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+        const date = new Date(s.created_at).toLocaleDateString('fr-FR', { dateStyle: 'medium' });
+        const decisionBadge = s.decision ? (DECISION_BADGES[s.decision] || '—') : '—';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <span class="mini-avatar">${initials}</span>
+            <strong>${s.candidate_name}</strong>
+          </td>
+          <td>${s.candidate_role}</td>
+          <td>${date}</td>
+          <td>${decisionBadge}</td>
+          <td>
+            <a href="session-detail.html?session=${s.session_id}" class="link-dl">
+              <i data-lucide="eye" class="icon icon-xs"></i> Voir
+            </a>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      lucide.createIcons();
+    }
+
+    loadCandidates();
+  </script>
+</body>
+</html>

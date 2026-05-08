@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rejoindre l'entretien — DeafHire</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="auth-body">
+
+  <div class="join-page">
+
+    <!-- Back -->
+    <a href="index.html" class="join-back">
+      <i data-lucide="chevron-left" class="icon icon-sm"></i> Retour
+    </a>
+
+    <div class="join-card">
+      <!-- Logo -->
+      <div class="join-logo">
+        <div class="logo-mark" style="width:52px;height:52px;border-radius:14px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px">
+            <path d="M11 6.5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h3"/>
+            <path d="M13 10.5V8a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-3"/>
+            <path d="M8 16a5 5 0 0 0 8 0"/>
+          </svg>
+        </div>
+        <span class="logo-text" style="font-size:1.3rem">Deaf<strong>Hire</strong></span>
+      </div>
+
+      <div class="join-header">
+        <h1>Rejoindre l'entretien</h1>
+        <p>Entrez le code de session fourni par votre recruteur</p>
+      </div>
+
+      <!-- Code input -->
+      <form id="join-form" onsubmit="joinSession(event)">
+        <div class="form-group">
+          <label>
+            <i data-lucide="hash" class="icon icon-xs"></i> Code de session
+          </label>
+          <input
+            type="text"
+            id="session-code"
+            class="code-input"
+            placeholder="Ex : INT-A1B2C"
+            maxlength="12"
+            autocomplete="off"
+            oninput="formatCode(this)"
+            required
+          />
+          <span class="form-hint">Le code vous a été envoyé par e-mail ou SMS.</span>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <i data-lucide="user" class="icon icon-xs"></i> Votre prénom
+          </label>
+          <input type="text" id="candidate-firstname" placeholder="Ex : Marie" required />
+        </div>
+
+        <!-- Camera test -->
+        <div class="camera-test-box" id="camera-test-box">
+          <div class="camera-test-header">
+            <i data-lucide="video" class="icon icon-sm"></i>
+            <span>Test de la caméra</span>
+            <span class="camera-status" id="camera-status">Non testé</span>
+          </div>
+          <div class="camera-preview-wrap" id="camera-preview-wrap">
+            <video id="preview-video" autoplay playsinline muted style="display:none;border-radius:8px;width:100%"></video>
+            <div class="camera-preview-placeholder" id="camera-placeholder">
+              <i data-lucide="video-off" class="icon icon-xl" style="color:rgba(255,255,255,.3)"></i>
+              <span>Activez la caméra pour tester</span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-test-cam" onclick="testCamera()">
+            <i data-lucide="video" class="icon icon-xs"></i> Tester la caméra
+          </button>
+        </div>
+
+        <div class="join-checklist" id="join-checklist">
+          <div class="check-item" id="check-code">
+            <i data-lucide="circle" class="icon icon-sm check-pending"></i>
+            <span>Code de session valide</span>
+          </div>
+          <div class="check-item" id="check-camera">
+            <i data-lucide="circle" class="icon icon-sm check-pending"></i>
+            <span>Caméra autorisée</span>
+          </div>
+          <div class="check-item" id="check-browser">
+            <i data-lucide="check-circle" class="icon icon-sm check-ok"></i>
+            <span>Navigateur compatible</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="btn-join">
+          <i data-lucide="video" class="icon icon-md"></i>
+          Rejoindre l'entretien
+        </button>
+      </form>
+
+      <div class="join-info">
+        <i data-lucide="info" class="icon icon-xs"></i>
+        La détection LSF démarrera automatiquement une fois connecté.
+        Assurez-vous d'être dans un endroit bien éclairé.
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    lucide.createIcons();
+
+    /* Check if URL already has a session code */
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(location.search);
+      const code = params.get('session');
+      if (code) {
+        document.getElementById('session-code').value = code.toUpperCase();
+        validateCode(code);
+      }
+    });
+
+    function formatCode(input) {
+      input.value = input.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+      if (input.value.length >= 3) validateCode(input.value);
+    }
+
+    function validateCode(code) {
+      const checkEl = document.getElementById('check-code');
+      const isValid = code.length >= 5;
+      checkEl.innerHTML = isValid
+        ? `<i data-lucide="check-circle" class="icon icon-sm check-ok"></i><span>Code de session valide</span>`
+        : `<i data-lucide="circle" class="icon icon-sm check-pending"></i><span>Code de session valide</span>`;
+      lucide.createIcons();
+    }
+
+    let cameraStream = null;
+    async function testCamera() {
+      const btn = document.getElementById('btn-test-cam');
+      const video = document.getElementById('preview-video');
+      const placeholder = document.getElementById('camera-placeholder');
+      const status = document.getElementById('camera-status');
+
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = cameraStream;
+        video.style.display = 'block';
+        placeholder.style.display = 'none';
+        status.textContent = 'OK';
+        status.style.color = 'var(--success)';
+
+        const checkEl = document.getElementById('check-camera');
+        checkEl.innerHTML = `<i data-lucide="check-circle" class="icon icon-sm check-ok"></i><span>Caméra autorisée</span>`;
+        lucide.createIcons();
+
+        btn.innerHTML = `<i data-lucide="check" class="icon icon-xs"></i> Caméra fonctionnelle`;
+        btn.classList.add('btn-success');
+      } catch {
+        status.textContent = 'Accès refusé';
+        status.style.color = 'var(--danger)';
+        const checkEl = document.getElementById('check-camera');
+        checkEl.innerHTML = `<i data-lucide="x-circle" class="icon icon-sm check-fail"></i><span>Caméra refusée</span>`;
+        lucide.createIcons();
+      }
+    }
+
+    async function joinSession(e) {
+      e.preventDefault();
+      const code = document.getElementById('session-code').value.trim();
+      const name = document.getElementById('candidate-firstname').value.trim();
+      const btn  = document.getElementById('btn-join');
+
+      if (!code) { showError('Entrez un code de session.'); return; }
+      if (!name) { showError('Entrez votre prénom.'); return; }
+
+      /* Validate session exists on server */
+      btn.disabled  = true;
+      btn.innerHTML = '<i data-lucide="loader" class="icon icon-sm spin"></i> Vérification…';
+      lucide.createIcons();
+
+      const API_BASE = (location.port === '5500' || location.port === '5501')
+        ? 'http://localhost:8001'
+        : location.origin;
+
+      try {
+        const res = await fetch(`${API_BASE}/sessions/validate/${encodeURIComponent(code)}`);
+        if (!res.ok) {
+          showError('Code de session introuvable. Vérifiez le code envoyé par votre recruteur.');
+          btn.disabled  = false;
+          btn.innerHTML = '<i data-lucide="video" class="icon icon-md"></i> Rejoindre l\'entretien';
+          lucide.createIcons();
+          return;
+        }
+        /* Session valid */
+        const data = await res.json();
+        if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+        window.location.href = `interview.html?role=candidate&session=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`;
+      } catch {
+        /* Backend unavailable — allow joining in demo mode */
+        if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+        window.location.href = `interview.html?role=candidate&session=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`;
+      }
+    }
+
+    function showError(msg) {
+      let el = document.getElementById('join-error');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'join-error';
+        el.style.cssText = 'color:var(--danger);font-size:.85rem;padding:8px 12px;background:rgba(239,68,68,.08);border-radius:8px;margin-top:8px;border:1px solid rgba(239,68,68,.2)';
+        document.getElementById('join-form').appendChild(el);
+      }
+      el.textContent = msg;
+    }
+  </script>
+</body>
+</html>

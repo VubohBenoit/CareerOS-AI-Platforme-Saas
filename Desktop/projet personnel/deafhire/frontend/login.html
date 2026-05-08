@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion — DeafHire</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="auth-body">
+
+  <div class="auth-split">
+
+    <!-- ── LEFT : Branding ── -->
+    <div class="auth-brand">
+      <div class="auth-brand-inner">
+        <a href="index.html" class="auth-logo">
+          <div class="logo-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 6.5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h3"/>
+              <path d="M13 10.5V8a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-3"/>
+              <path d="M8 16a5 5 0 0 0 8 0"/>
+            </svg>
+          </div>
+          <span class="logo-text">Deaf<strong>Hire</strong></span>
+        </a>
+        <h2>La plateforme d'entretiens inclusifs pour les candidats sourds et malentendants.</h2>
+        <div class="auth-features">
+          <div class="auth-feature">
+            <i data-lucide="scan-eye" class="icon icon-sm"></i>
+            <span>Détection LSF en temps réel</span>
+          </div>
+          <div class="auth-feature">
+            <i data-lucide="mic" class="icon icon-sm"></i>
+            <span>Voix → Texte → Signes</span>
+          </div>
+          <div class="auth-feature">
+            <i data-lucide="shield-check" class="icon icon-sm"></i>
+            <span>Données traitées localement</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RIGHT : Form ── -->
+    <div class="auth-form-wrap">
+      <div class="auth-card">
+        <div class="auth-card-header">
+          <h1>Connexion</h1>
+          <p>Accédez à votre espace recruteur</p>
+        </div>
+
+        <div class="auth-error" id="auth-error" hidden>
+          <i data-lucide="alert-circle" class="icon icon-sm"></i>
+          <span id="auth-error-msg">Identifiants incorrects.</span>
+        </div>
+
+        <form class="auth-form" id="login-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="email">
+              <i data-lucide="mail" class="icon icon-xs"></i> Adresse e-mail
+            </label>
+            <input
+              type="email" id="email" name="email"
+              placeholder="recruteur@entreprise.fr"
+              required autocomplete="email"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">
+              <i data-lucide="lock" class="icon icon-xs"></i> Mot de passe
+            </label>
+            <div class="input-password-wrap">
+              <input
+                type="password" id="password" name="password"
+                placeholder="••••••••"
+                required autocomplete="current-password"
+              />
+              <button type="button" class="toggle-pw" onclick="togglePassword()">
+                <i data-lucide="eye" class="icon icon-sm" id="pw-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-check">
+              <input type="checkbox" id="remember" />
+              <label for="remember">Se souvenir de moi</label>
+            </div>
+            <a href="#" class="link-forgot">Mot de passe oublié ?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full" id="login-btn">
+            <i data-lucide="log-in" class="icon icon-sm"></i>
+            Se connecter
+          </button>
+        </form>
+
+        <div class="auth-divider"><span>ou</span></div>
+
+        <div class="auth-demo-box">
+          <p>Compte de démonstration :</p>
+          <code>admin@deafhire.fr / deafhire2026</code>
+          <button class="btn btn-ghost btn-sm" onclick="fillDemo()">
+            <i data-lucide="zap" class="icon icon-xs"></i> Remplir automatiquement
+          </button>
+        </div>
+
+        <p class="auth-switch">
+          Pas encore de compte ?
+          <a href="#" onclick="showRegister()">Créer un compte</a>
+        </p>
+      </div>
+
+      <!-- Register form (hidden by default) -->
+      <div class="auth-card" id="register-card" style="display:none">
+        <div class="auth-card-header">
+          <h1>Créer un compte</h1>
+          <p>Rejoignez DeafHire en tant que recruteur</p>
+        </div>
+
+        <form class="auth-form" id="register-form" onsubmit="handleRegister(event)">
+          <div class="form-group">
+            <label><i data-lucide="user" class="icon icon-xs"></i> Nom complet</label>
+            <input type="text" id="reg-name" placeholder="Votre nom" required />
+          </div>
+          <div class="form-group">
+            <label><i data-lucide="mail" class="icon icon-xs"></i> E-mail</label>
+            <input type="email" id="reg-email" placeholder="vous@entreprise.fr" required />
+          </div>
+          <div class="form-group">
+            <label><i data-lucide="building-2" class="icon icon-xs"></i> Entreprise</label>
+            <input type="text" id="reg-company" placeholder="Nom de votre entreprise" required />
+          </div>
+          <div class="form-group">
+            <label><i data-lucide="lock" class="icon icon-xs"></i> Mot de passe</label>
+            <input type="password" id="reg-password" placeholder="Minimum 8 caractères" required minlength="8" />
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">
+            <i data-lucide="user-plus" class="icon icon-sm"></i> Créer mon compte
+          </button>
+        </form>
+
+        <p class="auth-switch">
+          Déjà un compte ?
+          <a href="#" onclick="showLogin()">Se connecter</a>
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+
+    /* Redirect if already logged in */
+    if (Auth.isAuthenticated()) {
+      window.location.href = 'dashboard.html';
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader" class="icon icon-sm spin"></i> Connexion…';
+      lucide.createIcons();
+
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      const ok = await Auth.login(email, password);
+      if (ok) {
+        window.location.href = 'dashboard.html';
+      } else {
+        document.getElementById('auth-error').hidden = false;
+        document.getElementById('auth-error-msg').textContent = 'Identifiants incorrects. Réessayez.';
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="log-in" class="icon icon-sm"></i> Se connecter';
+        lucide.createIcons();
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const data = {
+        name:     document.getElementById('reg-name').value.trim(),
+        email:    document.getElementById('reg-email').value.trim(),
+        company:  document.getElementById('reg-company').value.trim(),
+        password: document.getElementById('reg-password').value,
+      };
+      const ok = await Auth.register(data);
+      if (ok) {
+        window.location.href = 'dashboard.html';
+      } else {
+        alert('Erreur lors de la création du compte.');
+      }
+    }
+
+    function togglePassword() {
+      const pw = document.getElementById('password');
+      const eye = document.getElementById('pw-eye');
+      pw.type = pw.type === 'password' ? 'text' : 'password';
+      eye.setAttribute('data-lucide', pw.type === 'password' ? 'eye' : 'eye-off');
+      lucide.createIcons();
+    }
+
+    function fillDemo() {
+      document.getElementById('email').value = 'admin@deafhire.fr';
+      document.getElementById('password').value = 'deafhire2026';
+    }
+
+    function showRegister() {
+      document.querySelector('.auth-card').style.display = 'none';
+      document.getElementById('register-card').style.display = 'block';
+    }
+
+    function showLogin() {
+      document.querySelector('.auth-card').style.display = 'block';
+      document.getElementById('register-card').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

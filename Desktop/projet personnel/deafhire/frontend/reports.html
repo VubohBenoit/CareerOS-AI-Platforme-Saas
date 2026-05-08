@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rapports — DeafHire</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="dashboard-body">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <a href="index.html">
+        <div class="logo-mark logo-mark--sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 6.5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h3"/>
+            <path d="M13 10.5V8a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-3"/>
+            <path d="M8 16a5 5 0 0 0 8 0"/>
+          </svg>
+        </div>
+        <span class="logo-text">Deaf<strong>Hire</strong></span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="sidebar-link">
+        <i data-lucide="layout-dashboard" class="icon icon-sm"></i> Tableau de bord
+      </a>
+      <a href="interviews.html" class="sidebar-link">
+        <i data-lucide="calendar" class="icon icon-sm"></i> Entretiens
+      </a>
+      <a href="candidates.html" class="sidebar-link">
+        <i data-lucide="users" class="icon icon-sm"></i> Candidats
+      </a>
+      <a href="reports.html" class="sidebar-link active">
+        <i data-lucide="bar-chart-2" class="icon icon-sm"></i> Rapports
+      </a>
+      <a href="settings.html" class="sidebar-link">
+        <i data-lucide="settings" class="icon icon-sm"></i> Paramètres
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebar-avatar">R</div>
+      <div class="user-info">
+        <strong id="sidebar-name">Recruteur</strong>
+        <span id="sidebar-company">DeafHire</span>
+      </div>
+      <button class="logout-btn" onclick="Auth.logout()" title="Se déconnecter">
+        <i data-lucide="log-out" class="icon icon-sm"></i>
+      </button>
+    </div>
+  </aside>
+
+  <main class="dashboard-main">
+
+    <header class="dash-header">
+      <div>
+        <h1>Rapports</h1>
+        <p class="dash-subtitle">Statistiques et analyse de vos entretiens</p>
+      </div>
+    </header>
+
+    <!-- Live stats from sessions -->
+    <div class="dash-stats" id="stats-cards">
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:#EDE9FE;color:#7C3AED">
+          <i data-lucide="calendar-check" class="icon icon-lg"></i>
+        </div>
+        <div>
+          <strong class="stat-card-value" id="stat-total">—</strong>
+          <span class="stat-card-label">Total entretiens</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:#D1FAE5;color:#059669">
+          <i data-lucide="user-check" class="icon icon-lg"></i>
+        </div>
+        <div>
+          <strong class="stat-card-value" id="stat-retained">—</strong>
+          <span class="stat-card-label">Retenus</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:#FEF3C7;color:#D97706">
+          <i data-lucide="clock" class="icon icon-lg"></i>
+        </div>
+        <div>
+          <strong class="stat-card-value" id="stat-pending">—</strong>
+          <span class="stat-card-label">En attente</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon" style="background:#FEE2E2;color:#DC2626">
+          <i data-lucide="user-x" class="icon icon-lg"></i>
+        </div>
+        <div>
+          <strong class="stat-card-value" id="stat-rejected">—</strong>
+          <span class="stat-card-label">Non retenus</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decision breakdown -->
+    <div class="dash-section detail-card" style="margin-bottom:32px">
+      <h2 style="margin-bottom:20px">
+        <i data-lucide="pie-chart" class="icon icon-sm" style="color:var(--primary)"></i>
+        Répartition des décisions
+      </h2>
+      <div id="chart-wrap" style="display:flex;flex-direction:column;gap:12px">
+        <div class="empty-state" id="chart-empty">
+          <i data-lucide="bar-chart-2" class="icon icon-xl" style="color:var(--text-muted)"></i>
+          <p>Pas encore de données à afficher.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent completed sessions -->
+    <div class="dash-section">
+      <div class="dash-section-header">
+        <h2>Entretiens terminés</h2>
+        <span class="badge-count" id="completed-count">0</span>
+      </div>
+      <table class="past-table" id="completed-table" style="display:none">
+        <thead>
+          <tr>
+            <th>Candidat</th>
+            <th>Poste</th>
+            <th>Date</th>
+            <th>Décision</th>
+            <th>Transcript</th>
+          </tr>
+        </thead>
+        <tbody id="completed-body"></tbody>
+      </table>
+      <div class="empty-state" id="completed-empty">
+        <i data-lucide="inbox" class="icon icon-2xl" style="color:var(--text-muted)"></i>
+        <p>Aucun entretien terminé pour le moment.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+    Auth.requireAuth();
+
+    const user = Auth.getUser();
+    if (user) {
+      const initials = (user.name || 'R').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+      document.getElementById('sidebar-avatar').textContent  = initials;
+      document.getElementById('sidebar-name').textContent    = user.name    || 'Recruteur';
+      document.getElementById('sidebar-company').textContent = user.company || 'DeafHire';
+    }
+
+    const DECISION_BADGES = {
+      retained: '<span class="badge-status badge-status--ok">Retenu(e)</span>',
+      pending:  '<span class="badge-status badge-status--wait">En attente</span>',
+      rejected: '<span class="badge-status badge-status--no">Non retenu(e)</span>',
+    };
+    const DECISION_COLORS = {
+      retained: '#10B981',
+      pending:  '#F59E0B',
+      rejected: '#EF4444',
+    };
+
+    async function loadReports() {
+      try {
+        const res = await fetch(`${Auth.API_BASE}/sessions`, { headers: Auth.headers() });
+        if (!res.ok) throw new Error();
+        const sessions = await res.json();
+        renderReports(sessions);
+      } catch {
+        /* leave empty states */
+      }
+    }
+
+    function renderReports(sessions) {
+      const retained = sessions.filter(s => s.decision === 'retained').length;
+      const pending  = sessions.filter(s => !s.decision || s.decision === 'pending').length;
+      const rejected = sessions.filter(s => s.decision === 'rejected').length;
+      const completed = sessions.filter(s => s.status === 'completed' || s.status === 'rejected');
+
+      document.getElementById('stat-total').textContent    = sessions.length;
+      document.getElementById('stat-retained').textContent = retained;
+      document.getElementById('stat-pending').textContent  = pending;
+      document.getElementById('stat-rejected').textContent = rejected;
+
+      /* Decision chart (simple bar) */
+      if (sessions.length) {
+        const chartWrap = document.getElementById('chart-wrap');
+        document.getElementById('chart-empty').style.display = 'none';
+
+        const bars = [
+          { label: 'Retenus',      value: retained, color: DECISION_COLORS.retained },
+          { label: 'En attente',   value: pending,  color: DECISION_COLORS.pending },
+          { label: 'Non retenus',  value: rejected, color: DECISION_COLORS.rejected },
+        ];
+        const max = Math.max(...bars.map(b => b.value), 1);
+
+        bars.forEach(bar => {
+          const pct = Math.round((bar.value / max) * 100);
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;gap:12px;font-size:.875rem';
+          row.innerHTML = `
+            <span style="width:110px;color:var(--text-secondary);font-weight:500">${bar.label}</span>
+            <div style="flex:1;background:#F3F4F6;border-radius:99px;height:10px;overflow:hidden">
+              <div style="width:${pct}%;background:${bar.color};height:100%;border-radius:99px;transition:width .6s ease"></div>
+            </div>
+            <span style="width:24px;text-align:right;font-weight:700;color:${bar.color}">${bar.value}</span>
+          `;
+          chartWrap.appendChild(row);
+        });
+      }
+
+      /* Completed table */
+      document.getElementById('completed-count').textContent = completed.length;
+      if (completed.length) {
+        document.getElementById('completed-empty').style.display = 'none';
+        document.getElementById('completed-table').style.display = 'table';
+
+        completed.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        const tbody = document.getElementById('completed-body');
+        completed.forEach(s => {
+          const initials = s.candidate_name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+          const date = new Date(s.created_at).toLocaleDateString('fr-FR', { dateStyle: 'medium' });
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><span class="mini-avatar">${initials}</span><strong>${s.candidate_name}</strong></td>
+            <td>${s.candidate_role}</td>
+            <td>${date}</td>
+            <td>${s.decision ? (DECISION_BADGES[s.decision] || '—') : '—'}</td>
+            <td>
+              <a href="session-detail.html?session=${s.session_id}" class="link-dl">
+                <i data-lucide="eye" class="icon icon-xs"></i> Voir
+              </a>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      lucide.createIcons();
+    }
+
+    loadReports();
+  </script>
+</body>
+</html>
