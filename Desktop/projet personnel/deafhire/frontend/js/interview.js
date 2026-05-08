@@ -18,6 +18,7 @@ const state = {
   detectionActive: true,
   micActive:       false,
   transcript:      [],
+  signHistory:     [],
   lastLatency:     null,
   lastLandmarks:   null,
   autoConfirmTimer: null,
@@ -137,6 +138,13 @@ const API_BASE = (typeof Auth !== 'undefined')
   /* Show candidate name in topbar if available */
   if (state.candidateName && sessionIdEl) {
     sessionIdEl.textContent = `Session #${state.sessionId} — ${state.candidateName}`;
+  }
+
+  /* Restore theme from localStorage */
+  if (localStorage.getItem('deafhire_theme') === 'light') {
+    document.body.classList.add('light-mode');
+    const btn = $('btn-theme');
+    if (btn) btn.textContent = '🌙';
   }
 })();
 
@@ -262,6 +270,7 @@ async function startCamera() {
         const p = placeholder.querySelector('p');
         if (p) p.textContent = 'Accès caméra refusé';
       }
+      showWebRTCError('Accès à la caméra refusé. Vérifiez les permissions de votre navigateur.');
       if (isCandidate) {
         detector._runDemoMode();
         updateDetectionIndicator(true);
@@ -314,6 +323,17 @@ function handleSignDetected(sign, confidence, landmarks) {
   const latency = Math.round(30 + Math.random() * 20);
   state.lastLatency     = latency;
   latencyEl.textContent = latency;
+
+  /* Flash animation + glow on detected sign box */
+  const box = $('detected-sign-box');
+  if (box) {
+    box.classList.add('has-sign');
+    detectedEl.classList.remove('sign-flash');
+    void detectedEl.offsetWidth; /* force reflow to restart animation */
+    detectedEl.classList.add('sign-flash');
+  }
+
+  addToHistory(sign, confidence);
 
   if (state.role === 'candidate' && state.detectionActive) {
     clearTimeout(state.autoConfirmTimer);
@@ -473,8 +493,21 @@ function _initPC() {
   };
 
   _pc.onconnectionstatechange = () => {
-    if (_pc.connectionState === 'connected') setStatus('Connecté · P2P actif', true);
+    if (_pc.connectionState === 'connected') {
+      setStatus('Connecté · P2P actif', true);
+      dismissWebRTCError();
+    }
     if (_pc.connectionState === 'disconnected') setStatus('P2P déconnecté', false);
+    if (_pc.connectionState === 'failed') {
+      setStatus('P2P échoué', false);
+      showWebRTCError('La connexion vidéo a échoué. Vérifiez votre réseau.');
+    }
+  };
+
+  _pc.oniceconnectionstatechange = () => {
+    if (_pc.iceConnectionState === 'failed') {
+      showWebRTCError('Impossible d\'établir la connexion vidéo. Vérifiez votre réseau ou firewall.');
+    }
   };
 
   /* Add local tracks */
@@ -829,4 +862,178 @@ function importDataset(input) {
     input.value = '';
   };
   reader.readAsText(file);
+}
+
+/* =========================================================
+   SIGN HISTORY
+   ========================================================= */
+function addToHistory(sign, confidence) {
+  if (!sign || sign === '—') return;
+
+  const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  state.signHistory.unshift({ sign, confidence, time: now });
+  if (state.signHistory.length > 50) state.signHistory.pop();
+
+  const panel = $('sign-history-panel');
+  const empty = $('sign-history-empty');
+  if (!panel) return;
+
+  if (empty) empty.style.display = 'none';
+
+  const item = document.createElement('div');
+  item.className = 'sign-history-item';
+  item.innerHTML = `
+    <span class="sign-history-sign">${sign}</span>
+    <span class="sign-history-conf">${Math.round(confidence * 100)}%</span>
+    <span class="sign-history-time">${now}</span>
+  `;
+  panel.insertBefore(item, panel.firstChild);
+  if (empty) panel.appendChild(empty);
+}
+
+function toggleHistory() {
+  const panel = $('sign-history-panel');
+  const btn   = $('btn-history');
+  if (!panel) return;
+  const isOpen = panel.classList.toggle('open');
+  if (btn) btn.classList.toggle('active', isOpen);
+}
+
+/* =========================================================
+   THEME TOGGLE
+   ========================================================= */
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-mode');
+  localStorage.setItem('deafhire_theme', isLight ? 'light' : 'dark');
+  const btn = $('btn-theme');
+  if (btn) btn.textContent = isLight ? '🌙' : '☀️';
+}
+
+/* =========================================================
+   WEBRTC ERROR BANNER
+   ========================================================= */
+function showWebRTCError(msg) {
+  const banner = $('webrtc-error-banner');
+  const text   = $('webrtc-error-text');
+  if (!banner) return;
+  if (text) text.textContent = msg;
+  banner.classList.add('active');
+}
+
+function dismissWebRTCError() {
+  const banner = $('webrtc-error-banner');
+  if (banner) banner.classList.remove('active');
+}
+
+/* =========================================================
+   PDF EXPORT
+   ========================================================= */
+function exportSessionPDF() {
+  /* jsPDF loaded from CDN in interview.html */
+  const jspdfLib = window.jspdf || window.jsPDF;
+  if (!jspdfLib) {
+    alert('La librairie PDF n\'est pas disponible. Vérifiez votre connexion Internet.');
+    return;
+  }
+  const JsPDF = jspdfLib.jsPDF || jspdfLib;
+
+  const doc  = new JsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W    = doc.internal.pageSize.getWidth();
+  const cyan = [0, 200, 200];
+  const dark = [30, 30, 40];
+  let y = 20;
+
+  /* Header */
+  doc.setFillColor(...dark);
+  doc.rect(0, 0, W, 30, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DeafHire — Rapport d\'entretien', 14, 13);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Session #${state.sessionId}`, 14, 20);
+  doc.text(`Date : ${new Date().toLocaleString('fr-FR')}`, 14, 25);
+  doc.text(`Durée : ${DeafHire.formatTime(state.timerSeconds)}`, W - 14, 25, { align: 'right' });
+
+  y = 40;
+
+  /* Summary */
+  doc.setTextColor(...dark);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Résumé de session', 14, y);
+  y += 6;
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setDrawColor(...cyan);
+  doc.setLineWidth(0.5);
+  doc.line(14, y, W - 14, y);
+  y += 5;
+  doc.text(`Candidat : ${state.candidateName || 'Non renseigné'}`, 14, y); y += 5;
+  doc.text(`Rôle de l'utilisateur : ${state.role === 'candidate' ? 'Candidat' : 'Recruteur'}`, 14, y); y += 5;
+  doc.text(`Échanges : ${state.messageCount}`, 14, y); y += 5;
+  doc.text(`Signes détectés : ${state.signHistory.length}`, 14, y); y += 10;
+
+  /* Transcript */
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Transcript de l\'entretien', 14, y); y += 6;
+  doc.setLineWidth(0.5);
+  doc.line(14, y, W - 14, y); y += 5;
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'normal');
+
+  state.transcript.forEach(m => {
+    if (y > 270) { doc.addPage(); y = 20; }
+    const role  = m.role === 'candidate' ? 'CANDIDAT' : 'RECRUTEUR';
+    const sign  = m.sign ? ` [${m.sign}]` : '';
+    const label = `[${m.time}] ${role}${sign}`;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...cyan);
+    doc.text(label, 14, y); y += 4;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...dark);
+    const lines = doc.splitTextToSize(m.text, W - 28);
+    lines.forEach(line => {
+      if (y > 275) { doc.addPage(); y = 20; }
+      doc.text(line, 14, y); y += 4;
+    });
+    y += 2;
+  });
+
+  /* Sign history */
+  if (state.signHistory.length > 0) {
+    if (y > 240) { doc.addPage(); y = 20; }
+    y += 5;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...dark);
+    doc.text('Historique des signes LSF', 14, y); y += 6;
+    doc.setLineWidth(0.5);
+    doc.line(14, y, W - 14, y); y += 5;
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', 'normal');
+
+    [...state.signHistory].reverse().forEach(h => {
+      if (y > 275) { doc.addPage(); y = 20; }
+      doc.setTextColor(...cyan);
+      doc.text(h.sign, 14, y);
+      doc.setTextColor(...dark);
+      doc.text(`${Math.round(h.confidence * 100)}%`, 70, y);
+      doc.text(h.time, 100, y);
+      y += 5;
+    });
+  }
+
+  /* Footer */
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(7);
+    doc.setTextColor(150, 150, 150);
+    doc.text(`DeafHire · Page ${i}/${pageCount}`, W / 2, 290, { align: 'center' });
+  }
+
+  doc.save(`deafhire-rapport-${state.sessionId}.pdf`);
 }

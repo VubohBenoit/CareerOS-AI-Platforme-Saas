@@ -758,3 +758,249 @@
   .panel { min-height: 300px; }
   .panel--chat { min-height: 400px; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   DESIGN V2 — Glassmorphism, history, errors, theme
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Glassmorphism topbar ── */
+.interview-topbar {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(26,26,46,.85) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.06), 0 4px 16px rgba(0,0,0,.3);
+}
+
+/* ── Gradient accent on panels ── */
+.panel--candidate {
+  border-top: 2px solid rgba(6,182,212,.4);
+  background: linear-gradient(135deg, #1A1A2E 0%, #0F1729 100%);
+}
+.panel--chat {
+  border-top: 2px solid rgba(124,58,237,.4);
+  background: linear-gradient(135deg, #1A1A2E 0%, #12102A 100%);
+}
+.panel--recruiter {
+  border-top: 2px solid rgba(167,139,250,.3);
+  background: linear-gradient(135deg, #1A1A2E 0%, #150F2A 100%);
+}
+
+/* ── Detected sign — animated glow ── */
+.detected-sign-box {
+  position: relative;
+  overflow: hidden;
+  transition: border-color .3s;
+}
+.detected-sign-box.has-sign {
+  border-color: rgba(6,182,212,.5);
+  box-shadow: 0 0 0 1px rgba(6,182,212,.15), 0 4px 24px rgba(6,182,212,.08);
+}
+.detected-sign-text {
+  transition: all .25s cubic-bezier(.34,1.56,.64,1);
+}
+.detected-sign-text.sign-flash {
+  color: #22D3EE;
+  transform: scale(1.04);
+}
+
+/* ── WebRTC error banner ── */
+.webrtc-error-banner {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: rgba(239,68,68,.12);
+  border: 1px solid rgba(239,68,68,.3);
+  border-radius: 8px;
+  font-size: .82rem;
+  color: #FCA5A5;
+  margin: 0 12px;
+  animation: slide-down .3s ease;
+}
+.webrtc-error-banner.active { display: flex; }
+.webrtc-error-banner button {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #FCA5A5;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0 4px;
+  opacity: .7;
+  transition: opacity .2s;
+}
+.webrtc-error-banner button:hover { opacity: 1; }
+.webrtc-error-icon { font-size: 1rem; flex-shrink: 0; }
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Connection quality badge ── */
+.conn-quality {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  margin-left: 8px;
+}
+.conn-quality--good   { background: rgba(16,185,129,.15); color: #10B981; }
+.conn-quality--warn   { background: rgba(245,158,11,.15);  color: #F59E0B; }
+.conn-quality--bad    { background: rgba(239,68,68,.15);   color: #EF4444; }
+.conn-quality-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ── Sign history panel ── */
+.sign-history-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .72rem;
+  font-weight: 600;
+  color: rgba(255,255,255,.4);
+  background: none;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 6px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.sign-history-toggle:hover { color: #06B6D4; border-color: rgba(6,182,212,.3); }
+.sign-history-toggle.active { color: #06B6D4; border-color: rgba(6,182,212,.4); background: rgba(6,182,212,.06); }
+
+.sign-history-panel {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 160px;
+  overflow-y: auto;
+  background: rgba(0,0,0,.2);
+  border-radius: 8px;
+  padding: 8px;
+  border: 1px solid rgba(255,255,255,.07);
+}
+.sign-history-panel.open { display: flex; }
+
+.sign-history-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 5px;
+  font-size: .75rem;
+  animation: chip-in .15s ease;
+}
+.sign-history-item:hover { background: rgba(255,255,255,.04); }
+.sign-history-sign { font-weight: 700; color: #06B6D4; min-width: 90px; }
+.sign-history-conf {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,.08);
+  overflow: hidden;
+}
+.sign-history-conf-fill {
+  height: 100%;
+  background: linear-gradient(90deg,#10B981,#06B6D4);
+  border-radius: 2px;
+}
+.sign-history-time { color: rgba(255,255,255,.25); font-size: .68rem; white-space: nowrap; }
+.sign-history-empty { font-size: .75rem; color: rgba(255,255,255,.2); text-align: center; padding: 8px; }
+
+/* ── Theme toggle ── */
+.theme-toggle {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.5);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all .2s;
+}
+.theme-toggle:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+/* ── Light mode override for interview ── */
+.interview-body.light-mode {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+.interview-body.light-mode .interview-topbar {
+  background: rgba(255,255,255,.9) !important;
+  border-bottom: 1px solid #E2E8F0;
+  box-shadow: 0 1px 0 #E2E8F0, 0 4px 16px rgba(0,0,0,.06);
+}
+.interview-body.light-mode .panel {
+  background: #fff;
+  border-color: #E2E8F0;
+}
+.interview-body.light-mode .panel--candidate { border-top-color: #06B6D4; }
+.interview-body.light-mode .panel--chat { border-top-color: #7C3AED; }
+.interview-body.light-mode .panel--recruiter { border-top-color: #A78BFA; }
+.interview-body.light-mode .interview-controls {
+  background: #fff;
+  border-top-color: #E2E8F0;
+}
+.interview-body.light-mode .chat-input {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+.interview-body.light-mode .chat-input::placeholder { color: #94A3B8; }
+.interview-body.light-mode .ctrl-btn {
+  border-color: #CBD5E1;
+  background: #F8FAFC;
+  color: #475569;
+}
+.interview-body.light-mode .ctrl-btn:hover { background: #F1F5F9; }
+.interview-body.light-mode .interview-timer { color: #0F172A; }
+.interview-body.light-mode .session-id { color: #7C3AED; }
+.interview-body.light-mode .session-status { color: #64748B; }
+.interview-body.light-mode .back-link { color: #64748B; }
+.interview-body.light-mode .back-link:hover { color: #0F172A; }
+.interview-body.light-mode .chat-messages { background: #F8FAFC; }
+.interview-body.light-mode .chat-msg--candidate .chat-msg-bubble { background: #E0F7FA; border-color: #06B6D4; color: #0C4A6E; }
+.interview-body.light-mode .chat-msg--recruiter .chat-msg-bubble { background: #EDE9FE; border-color: #7C3AED; color: #3B0764; }
+.interview-body.light-mode .chat-system-msg { background: #F1F5F9; color: #94A3B8; }
+.interview-body.light-mode .detected-sign-box { background: rgba(6,182,212,.05); }
+.interview-body.light-mode .detected-sign-text { color: #0E7490; }
+.interview-body.light-mode .suggestion-btn { border-color: #E2E8F0; background: #F8FAFC; color: #475569; }
+.interview-body.light-mode .suggestion-btn:hover { background: #EDE9FE; border-color: #7C3AED; color: #3B0764; }
+.interview-body.light-mode .sign-display-box { background: rgba(124,58,237,.05); border-color: rgba(124,58,237,.2); }
+.interview-body.light-mode .sign-display-text { color: #3B0764; }
+.interview-body.light-mode .latency-info { color: #64748B; }
+.interview-body.light-mode .role-badge { background: #F1F5F9; color: #475569; }
+.interview-body.light-mode .role-badge--candidate { background: #E0F7FA; color: #0E7490; }
+.interview-body.light-mode .role-badge--recruiter { background: #EDE9FE; color: #5B21B6; }
+.interview-body.light-mode .theme-toggle { border-color: #CBD5E1; background: #F8FAFC; color: #475569; }
+.interview-body.light-mode .sign-history-panel { background: #F8FAFC; border-color: #E2E8F0; }
+.interview-body.light-mode .sign-history-sign { color: #0E7490; }
+.interview-body.light-mode .sign-history-time { color: #94A3B8; }
+
+/* ── Smooth panel transitions ── */
+.panel { transition: box-shadow .3s; }
+.panel:hover { box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 8px 32px rgba(0,0,0,.2); }
+
+/* ── Video mirror label ── */
+.video-wrapper::after {
+  content: 'LSF';
+  position: absolute;
+  top: 8px; right: 8px;
+  font-size: .65rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: rgba(6,182,212,.2);
+  color: #06B6D4;
+  border: 1px solid rgba(6,182,212,.3);
+}

@@ -145,6 +145,7 @@ async def get_session(session_id: str, request: Request):
         join_url_recruiter = f"{base_url}/interview.html?role=recruiter&session={session_id}",
         notes              = s.get("notes"),
         decision           = s.get("decision"),
+        rating             = s.get("rating"),
     )
 
 

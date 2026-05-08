@@ -50,7 +50,8 @@ def init_db():
             created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
             ended_at        TEXT,
             notes           TEXT,
-            decision        TEXT
+            decision        TEXT,
+            rating          INTEGER
         );
 
         CREATE TABLE IF NOT EXISTS transcript_entries (

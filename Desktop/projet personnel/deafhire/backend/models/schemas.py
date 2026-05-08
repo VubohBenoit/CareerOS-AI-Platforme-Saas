@@ -36,12 +36,14 @@ class SessionResponse(BaseModel):
     join_url_recruiter:  str
     notes:               Optional[str] = None
     decision:            Optional[str] = None
+    rating:              Optional[int] = None
 
 
 class SessionUpdate(BaseModel):
     status:    Optional[str] = Field(None, pattern=r'^(pending|active|completed|rejected)$')
     notes:     Optional[str] = Field(None, max_length=4000)
     decision:  Optional[str] = Field(None, pattern=r'^(retained|pending|rejected)$')
+    rating:    Optional[int] = Field(None, ge=1, le=5)
     ended_at:  Optional[str] = None
 
 

@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeafHire — Guide de démarrage</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    :root {
+      --cyan:   #06B6D4;
+      --purple: #7C3AED;
+      --bg:     #0F1117;
+      --bg2:    #181B24;
+      --border: rgba(255,255,255,.07);
+      --text:   #E2E8F0;
+      --muted:  #94A3B8;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    .onb-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15,17,23,.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .onb-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .onb-logo-mark {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .onb-logo-mark svg { width: 18px; height: 18px; stroke: #fff; }
+    .onb-logo-text { font-weight: 700; font-size: 1.1rem; }
+    .onb-logo-text strong { color: var(--cyan); }
+    .nav-skip {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 7px 18px;
+      border-radius: 8px;
+      font-size: .85rem;
+      cursor: pointer;
+      transition: all .2s;
+      text-decoration: none;
+    }
+    .nav-skip:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    /* ── PROGRESS BAR ── */
+    .onb-progress {
+      width: 100%;
+      height: 3px;
+      background: var(--border);
+    }
+    .onb-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      transition: width .4s ease;
+    }
+
+    /* ── CONTAINER ── */
+    .onb-container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+    }
+
+    /* ── STEPS ── */
+    .step { display: none; animation: fadeIn .35s ease; }
+    .step.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(6,182,212,.12);
+      border: 1px solid rgba(6,182,212,.25);
+      color: var(--cyan);
+      font-size: .75rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .step h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 14px;
+    }
+    .step h1 span { color: var(--cyan); }
+
+    .step-sub {
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 40px;
+      max-width: 600px;
+    }
+
+    /* ── FEATURE CARDS ── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .feature-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 20px;
+      text-align: center;
+      transition: border-color .2s, transform .2s;
+    }
+    .feature-card:hover { border-color: rgba(6,182,212,.3); transform: translateY(-2px); }
+    .feature-icon {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, rgba(6,182,212,.15), rgba(124,58,237,.15));
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+    }
+    .feature-icon svg { width: 24px; height: 24px; stroke: var(--cyan); }
+    .feature-card h3 { font-size: .95rem; font-weight: 600; margin-bottom: 6px; }
+    .feature-card p  { font-size: .82rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── INSTRUCTION STEPS ── */
+    .instruction-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .instruction-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .instruction-num {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: .9rem;
+      color: #fff;
+    }
+    .instruction-body h4 { font-size: .95rem; font-weight: 600; margin-bottom: 4px; }
+    .instruction-body p  { font-size: .83rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── CAMERA CHECK ── */
+    .camera-check {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .camera-preview {
+      width: 280px;
+      height: 200px;
+      background: #0a0c12;
+      border-radius: 12px;
+      margin: 0 auto 20px;
+      overflow: hidden;
+      position: relative;
+      border: 2px solid var(--border);
+    }
+    .camera-preview video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+    .camera-preview-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+    .camera-preview-placeholder svg { width: 36px; height: 36px; opacity: .4; }
+    #btn-camera-test {
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      border: none;
+      color: #fff;
+      padding: 11px 28px;
+      border-radius: 10px;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    #btn-camera-test:hover { opacity: .85; }
+    .camera-status {
+      margin-top: 12px;
+      font-size: .82rem;
+      color: var(--muted);
+    }
+    .camera-status.ok  { color: #34D399; }
+    .camera-status.err { color: #F87171; }
+
+    /* ── SIGN DEMO ── */
+    .sign-demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+    .sign-demo-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 12px;
+      text-align: center;
+      cursor: default;
+      transition: border-color .2s;
+    }
+    .sign-demo-card:hover { border-color: rgba(6,182,212,.35); }
+    .sign-demo-emoji { font-size: 2.2rem; margin-bottom: 8px; }
+    .sign-demo-label { font-size: .82rem; font-weight: 600; color: var(--text); }
+    .sign-demo-french { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── TIP BOX ── */
+    .tip-box {
+      background: rgba(6,182,212,.06);
+      border: 1px solid rgba(6,182,212,.2);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 32px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .tip-box svg { width: 20px; height: 20px; stroke: var(--cyan); flex-shrink: 0; margin-top: 2px; }
+    .tip-box p { font-size: .85rem; color: var(--muted); line-height: 1.55; }
+    .tip-box strong { color: var(--text); }
+
+    /* ── NAVIGATION BUTTONS ── */
+    .step-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 32px;
+      gap: 12px;
+    }
+    .btn-prev {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 11px 24px;
+      border-radius: 10px;
+      font-size: .9rem;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .btn-prev:hover { border-color: var(--cyan); color: var(--cyan); }
+    .btn-prev svg { width: 16px; height: 16px; }
+    .btn-next {
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      border: none;
+      color: #fff;
+      padding: 12px 32px;
+      border-radius: 10px;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .btn-next:hover { opacity: .88; transform: translateX(2px); }
+    .btn-next svg { width: 16px; height: 16px; }
+
+    /* ── STEP DOTS ── */
+    .step-dots {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background .3s, transform .3s;
+    }
+    .step-dot.active {
+      background: var(--cyan);
+      transform: scale(1.3);
+    }
+    .step-dot.done {
+      background: rgba(6,182,212,.4);
+    }
+
+    /* ── FINAL STEP ── */
+    .final-hero {
+      text-align: center;
+      padding: 20px 0 40px;
+    }
+    .final-hero-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+    .final-hero-icon svg { width: 42px; height: 42px; stroke: #fff; }
+    .final-cta-group {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 32px;
+    }
+    .btn-cta-primary {
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      border: none;
+      color: #fff;
+      padding: 14px 36px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-cta-primary:hover { opacity: .85; }
+    .btn-cta-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: .95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-cta-secondary:hover { border-color: var(--cyan); color: var(--cyan); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="onb-nav">
+    <a href="index.html" class="onb-logo">
+      <div class="onb-logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 6.5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h3"/>
+          <path d="M13 10.5V8a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-3"/>
+          <path d="M8 16a5 5 0 0 0 8 0"/>
+        </svg>
+      </div>
+      <span class="onb-logo-text">Deaf<strong>Hire</strong></span>
+    </a>
+    <a href="interview.html" class="nav-skip">Passer l'introduction →</a>
+  </nav>
+
+  <div class="onb-progress">
+    <div class="onb-progress-fill" id="progress-fill" style="width:20%"></div>
+  </div>
+
+  <div class="onb-container">
+
+    <!-- ══ STEP 1 — Bienvenue ══ -->
+    <div class="step active" id="step-1">
+      <div class="step-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M11 6.5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h3"/><path d="M13 10.5V8a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-3"/><path d="M8 16a5 5 0 0 0 8 0"/></svg>
+        Bienvenue sur DeafHire
+      </div>
+      <h1>La plateforme d'entretien <span>conçue pour vous</span></h1>
+      <p class="step-sub">
+        DeafHire permet aux candidats sourds et malentendants de passer des entretiens d'embauche
+        en langue des signes, sans interprète, grâce à la reconnaissance automatique des signes en temps réel.
+      </p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+          </div>
+          <h3>Signes → Texte</h3>
+          <p>Vos signes LSF sont reconnus et traduits en français en temps réel.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          </div>
+          <h3>Zéro interprète</h3>
+          <p>L'IA traduit directement — aucun tiers n'est nécessaire pendant l'entretien.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.07 2H6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9a16 16 0 0 0 6 6l.27-.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 20 17l2.92-.08z"/></svg>
+          </div>
+          <h3>Vidéo HD</h3>
+          <p>Connexion WebRTC directe pour une vidéo fluide et sécurisée.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <h3>Rapport PDF</h3>
+          <p>Tout l'entretien est résumé et exportable en PDF en un clic.</p>
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <div class="step-dots">
+          <div class="step-dot active" id="dot-1"></div>
+          <div class="step-dot" id="dot-2"></div>
+          <div class="step-dot" id="dot-3"></div>
+          <div class="step-dot" id="dot-4"></div>
+          <div class="step-dot" id="dot-5"></div>
+        </div>
+        <button class="btn-next" onclick="goNext()">
+          Suivant
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 2 — Autoriser la caméra ══ -->
+    <div class="step" id="step-2">
+      <div class="step-badge">Étape 1 sur 4 — Caméra</div>
+      <h1>Autorisez l'accès à votre <span>caméra</span></h1>
+      <p class="step-sub">
+        DeafHire utilise votre caméra pour détecter vos signes via MediaPipe.
+        Aucune vidéo n'est stockée — tout est traité localement dans votre navigateur.
+      </p>
+
+      <div class="camera-check">
+        <div class="camera-preview" id="camera-preview">
+          <div class="camera-preview-placeholder" id="camera-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <span>Caméra non démarrée</span>
+          </div>
+          <video id="onb-video" autoplay muted playsinline style="display:none"></video>
+        </div>
+        <button id="btn-camera-test" onclick="testCamera()">Tester ma caméra</button>
+        <div class="camera-status" id="camera-status">Cliquez pour vérifier votre caméra</div>
+      </div>
+
+      <div class="tip-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        <p><strong>Conseil :</strong> Assurez-vous d'être dans un endroit bien éclairé, face à la caméra.
+        Un fond uniforme améliore la précision de détection des signes.</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn-prev" onclick="goPrev()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+          Retour
+        </button>
+        <div class="step-dots">
+          <div class="step-dot done" id="dot-1b"></div>
+          <div class="step-dot active" id="dot-2b"></div>
+          <div class="step-dot" id="dot-3b"></div>
+          <div class="step-dot" id="dot-4b"></div>
+          <div class="step-dot" id="dot-5b"></div>
+        </div>
+        <button class="btn-next" onclick="goNext()">
+          Suivant
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 3 — Comment signer ══ -->
+    <div class="step" id="step-3">
+      <div class="step-badge">Étape 2 sur 4 — Signes reconnus</div>
+      <h1>Les signes <span>reconnus</span> par DeafHire</h1>
+      <p class="step-sub">
+        Le système reconnaît plus de 100 signes ASL traduits en français.
+        Voici les principaux signes utilisables lors d'un entretien.
+      </p>
+
+      <div class="sign-demo-grid">
+        <div class="sign-demo-card"><div class="sign-demo-emoji">👋</div><div class="sign-demo-label">Bonjour</div><div class="sign-demo-french">Hello</div></div>
+        <div class="sign-demo-card"><div class="sign-demo-emoji">🙏</div><div class="sign-demo-label">Merci</div><div class="sign-demo-french">Thank you</div></div>
+        <div class="sign-demo-card"><div class="sign-demo-emoji">✅</div><div class="sign-demo-label">Oui</div><div class="sign-demo-french">Yes</div></div>
+        <div class="sign-demo-card"><div class="sign-demo-emoji">❌</div><div class="sign-demo-label">Non</div><div class="sign-demo-french">No</div></div>
+        <div class="sign-demo-card"><div class="sign-demo-emoji">👤</div><div class="sign-demo-label">Je / Moi</div><div class="sign-demo-french">I / Me</div></div>
+        <div class="sign-demo-card"><div class="sign-demo-emoji">💼</div><div class="sign-demo-label">Travail</div><div class="sign-demo-french">Work / Job</div></div>
+        <div class="sign-demo-card"><div class="sign-demo-emoji">🎓</div><div class="sign-demo-label">Formation</div><div class="sign-demo-french">Education</div></div>
+        <div class="sign-demo-card"><div class="sign-demo-emoji">⭐</div><div class="sign-demo-label">Compétence</div><div class="sign-demo-french">Skill</div></div>
+        <div class="sign-demo-card"><div class="sign-demo-emoji">🤝</div><div class="sign-demo-label">Équipe</div><div class="sign-demo-french">Team</div></div>
+        <div class="sign-demo-card"><div class="sign-demo-emoji">🔮</div><div class="sign-demo-label">Futur</div><div class="sign-demo-french">Future / Will</div></div>
+        <div class="sign-demo-card"><div class="sign-demo-emoji">❓</div><div class="sign-demo-label">Question</div><div class="sign-demo-french">Question</div></div>
+        <div class="sign-demo-card"><div class="sign-demo-emoji">🔁</div><div class="sign-demo-label">Répéter</div><div class="sign-demo-french">Repeat / Again</div></div>
+      </div>
+
+      <div class="tip-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        <p><strong>Comment confirmer un signe :</strong> maintenez le signe stable pendant 1,5 seconde.
+        La barre de confiance monte, puis le signe est automatiquement envoyé au recruteur.</p>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn-prev" onclick="goPrev()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+          Retour
+        </button>
+        <div class="step-dots">
+          <div class="step-dot done"></div>
+          <div class="step-dot done"></div>
+          <div class="step-dot active"></div>
+          <div class="step-dot"></div>
+          <div class="step-dot"></div>
+        </div>
+        <button class="btn-next" onclick="goNext()">
+          Suivant
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 4 — Interface entretien ══ -->
+    <div class="step" id="step-4">
+      <div class="step-badge">Étape 3 sur 4 — Interface</div>
+      <h1>Comprendre <span>l'interface</span> d'entretien</h1>
+      <p class="step-sub">
+        Voici les différentes zones de la salle d'entretien et leur rôle.
+      </p>
+
+      <div class="instruction-list">
+        <div class="instruction-item">
+          <div class="instruction-num">1</div>
+          <div class="instruction-body">
+            <h4>📹 Zone vidéo (gauche)</h4>
+            <p>Votre caméra s'affiche ici. La détection des signes se fait en temps réel sur cette image. Assurez-vous que vos mains sont bien visibles dans le cadre.</p>
+          </div>
+        </div>
+        <div class="instruction-item">
+          <div class="instruction-num">2</div>
+          <div class="instruction-body">
+            <h4>🤟 Zone de détection (bas gauche)</h4>
+            <p>Le signe détecté s'affiche ici avec sa traduction française et son niveau de confiance (0–100 %). Maintenez le signe stable pour le confirmer automatiquement.</p>
+          </div>
+        </div>
+        <div class="instruction-item">
+          <div class="instruction-num">3</div>
+          <div class="instruction-body">
+            <h4>💬 Transcript (droite)</h4>
+            <p>Tous les échanges de l'entretien apparaissent ici — vos signes traduits en texte, et les messages du recruteur.</p>
+          </div>
+        </div>
+        <div class="instruction-item">
+          <div class="instruction-num">4</div>
+          <div class="instruction-body">
+            <h4>🕐 Historique des signes</h4>
+            <p>Cliquez sur "Historique" pour voir tous les signes détectés pendant la session avec leur heure et niveau de confiance.</p>
+          </div>
+        </div>
+        <div class="instruction-item">
+          <div class="instruction-num">5</div>
+          <div class="instruction-body">
+            <h4>☀️ / 🌙 Mode clair/sombre</h4>
+            <p>Changez le thème selon votre préférence avec le bouton en haut à droite. Votre choix est mémorisé pour les prochaines sessions.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn-prev" onclick="goPrev()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+          Retour
+        </button>
+        <div class="step-dots">
+          <div class="step-dot done"></div>
+          <div class="step-dot done"></div>
+          <div class="step-dot done"></div>
+          <div class="step-dot active"></div>
+          <div class="step-dot"></div>
+        </div>
+        <button class="btn-next" onclick="goNext()">
+          Suivant
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 5 — Prêt ══ -->
+    <div class="step" id="step-5">
+      <div class="final-hero">
+        <div class="final-hero-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h1>Vous êtes <span style="color:#06B6D4">prêt(e) !</span></h1>
+        <p class="step-sub" style="margin:0 auto 0">
+          Tout est en place. Vous pouvez maintenant rejoindre votre entretien.
+          N'oubliez pas : signez lentement et distinctement pour une meilleure détection.
+        </p>
+
+        <div class="final-cta-group">
+          <a href="interview.html" class="btn-cta-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            Commencer l'entretien
+          </a>
+          <a href="join.html" class="btn-cta-secondary">
+            Rejoindre une session →
+          </a>
+        </div>
+
+        <div style="margin-top:40px">
+          <div class="step-dots" style="justify-content:center">
+            <div class="step-dot done"></div>
+            <div class="step-dot done"></div>
+            <div class="step-dot done"></div>
+            <div class="step-dot done"></div>
+            <div class="step-dot active"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /onb-container -->
+
+  <script>
+    let currentStep = 1;
+    const TOTAL = 5;
+    let cameraStream = null;
+
+    function updateProgress() {
+      const pct = (currentStep / TOTAL) * 100;
+      document.getElementById('progress-fill').style.width = pct + '%';
+    }
+
+    function goNext() {
+      if (currentStep >= TOTAL) return;
+      document.getElementById('step-' + currentStep).classList.remove('active');
+      currentStep++;
+      document.getElementById('step-' + currentStep).classList.add('active');
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goPrev() {
+      if (currentStep <= 1) return;
+      document.getElementById('step-' + currentStep).classList.remove('active');
+      currentStep--;
+      document.getElementById('step-' + currentStep).classList.add('active');
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function testCamera() {
+      const btn      = document.getElementById('btn-camera-test');
+      const status   = document.getElementById('camera-status');
+      const video    = document.getElementById('onb-video');
+      const ph       = document.getElementById('camera-placeholder');
+
+      btn.textContent = 'Test en cours…';
+      btn.disabled = true;
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        cameraStream = stream;
+        video.srcObject = stream;
+        video.style.display = 'block';
+        if (ph) ph.style.display = 'none';
+        status.textContent = '✓ Caméra détectée et fonctionnelle';
+        status.className = 'camera-status ok';
+        btn.textContent = 'Caméra OK ✓';
+      } catch (err) {
+        status.textContent = '⚠ Accès refusé — vérifiez les permissions de votre navigateur';
+        status.className = 'camera-status err';
+        btn.textContent = 'Réessayer';
+        btn.disabled = false;
+      }
+    }
+
+    /* Mark onboarding complete so the app doesn't show it again */
+    localStorage.setItem('deafhire_onboarding_done', '1');
+  </script>
+
+</body>
+</html>
