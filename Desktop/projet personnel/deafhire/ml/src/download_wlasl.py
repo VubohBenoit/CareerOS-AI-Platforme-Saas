@@ -89,7 +89,7 @@ def fetch_meta() -> list:
         sys.exit(f"❌  Impossible de télécharger les métadonnées WLASL : {e}")
 
 
-def select_glosses(meta: list, top: int | None, glosses: list | None) -> list:
+def select_glosses(meta: list, top, glosses) -> list:
     """Retourne les entrées WLASL filtrées selon les options CLI."""
     if glosses:
         low = {g.lower() for g in glosses}
@@ -107,37 +107,56 @@ def _safe_name(gloss: str) -> str:
                  .replace("(", "").replace(")", ""))
 
 
+def _is_youtube(url: str) -> bool:
+    return "youtube.com" in url or "youtu.be" in url
+
+
 def download_one(url: str, out_path: Path) -> bool:
     if out_path.exists() and out_path.stat().st_size > 10_000:
         return True
-    cmd = [
-        "yt-dlp", url,
-        "--format", "best[height<=480][ext=mp4]/best[height<=480]/best",
-        "--output", str(out_path),
-        "--no-playlist", "--quiet", "--no-warnings",
-        "--no-check-certificate",
-        "--extractor-args", "youtube:player_client=android",
-        "--socket-timeout", "20",
-        "--retries", "2",
-    ]
-    try:
-        subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-        if out_path.exists() and out_path.stat().st_size > 10_000:
-            return True
-        for p in out_path.parent.glob(out_path.stem + ".*"):
-            if p.stat().st_size > 10_000:
-                p.rename(out_path)
+
+    if _is_youtube(url):
+        cmd = [
+            "yt-dlp", url,
+            "--format", "best[height<=480][ext=mp4]/best[height<=480]/best",
+            "--output", str(out_path),
+            "--no-playlist", "--quiet", "--no-warnings",
+            "--no-check-certificate",
+            "--extractor-args", "youtube:player_client=android",
+            "--socket-timeout", "20",
+            "--retries", "2",
+        ]
+        try:
+            subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            if out_path.exists() and out_path.stat().st_size > 10_000:
                 return True
-    except Exception:
-        pass
-    return False
+            for p in out_path.parent.glob(out_path.stem + ".*"):
+                if p.stat().st_size > 10_000:
+                    p.rename(out_path)
+                    return True
+        except Exception:
+            pass
+        return False
+    else:
+        # Direct MP4 download
+        try:
+            headers = {"User-Agent": "Mozilla/5.0 (compatible; DeafHire/1.0)"}
+            r = requests.get(url, headers=headers, timeout=30, stream=True)
+            if r.status_code == 200:
+                with open(out_path, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=65536):
+                        f.write(chunk)
+                if out_path.stat().st_size > 10_000:
+                    return True
+                out_path.unlink(missing_ok=True)
+        except Exception:
+            pass
+        return False
 
 
 def download_sign(entry: dict, max_videos: int) -> tuple[str, int]:
     gloss     = entry["gloss"]
-    instances = [i for i in entry["instances"]
-                 if i.get("source") == "youtube"
-                 and i.get("url")]
+    instances = [i for i in entry["instances"] if i.get("url")]
 
     if not instances:
         return gloss, 0
@@ -251,7 +270,7 @@ def cmd_list_glosses(args):
     meta_sorted = sorted(meta, key=lambda e: e["gloss"])
     print(f"\n  {len(meta)} signes WLASL disponibles :\n")
     for i, e in enumerate(meta_sorted):
-        n_yt = sum(1 for inst in e["instances"] if inst.get("source") == "youtube")
+        n_yt = sum(1 for inst in e["instances"] if inst.get("url"))
         print(f"  {i+1:>4}. {e['gloss']:<30}  {n_yt:>3} vidéos YouTube")
     print()
 
