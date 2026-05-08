@@ -14,20 +14,18 @@ DeafHire permet aux recruteurs de conduire des entretiens avec des candidats sou
 | Page candidat « Rejoindre » avec validation session + test caméra | ✅ |
 | Salle d'entretien temps réel (WebSocket + keep-alive ping/pong) | ✅ |
 | Vidéo P2P WebRTC (signalement via WebSocket) | ✅ |
-| Détection LSF via MediaPipe Holistic (14 signes, auto-confirm 1,5 s) | ✅ |
-| Transmission des landmarks bruts vers le backend | ✅ |
+| Détection LSF multicouche (GestureModel + TF.js + règles géométriques) | ✅ |
+| Trainer IA in-browser — TF.js MLP, 14 signes, import/export dataset | ✅ |
+| Guide visuel par signe (SVG + description + tags) | ✅ |
+| Grand modèle Python — architecture 512→256→128, export TF.js auto | ✅ |
+| Scraper Spreadthesign (5 916 signes LSF téléchargeables) | ✅ |
 | Reconnaissance vocale recruteur (Web Speech API) | ✅ |
-| Affichage mots-clés LSF pour le candidat | ✅ |
 | Transcript temps réel persisté en base à chaque message | ✅ |
 | Transcript téléchargeable (.txt) depuis la salle ou le détail | ✅ |
 | Page de détail de session (notes, décision, transcript) | ✅ |
-| Page Entretiens (liste complète avec statut/décision) | ✅ |
-| Page Candidats (tableau historique) | ✅ |
-| Page Rapports (stats + graphe décisions + terminés) | ✅ |
-| Page Paramètres (profil, préférences, déconnexion) | ✅ |
+| Page Entretiens, Candidats, Rapports, Paramètres | ✅ |
 | Base de données SQLite persistante (WAL mode) | ✅ |
 | Envoi d'email HTML (SMTP configurable) | ✅ |
-| Modèle ML demo générable (RandomForest) | ✅ |
 | Docker (production-ready) | ✅ |
 | Avatar 3D LSF | 🗺️ Roadmap |
 | Support LSE / ASL / BSL | 🗺️ Roadmap |
@@ -41,7 +39,7 @@ deafhire/
 ├── frontend/
 │   ├── index.html              ← Landing page publique
 │   ├── login.html              ← Connexion recruteur (JWT)
-│   ├── dashboard.html          ← Tableau de bord (protégé, données live)
+│   ├── dashboard.html          ← Tableau de bord (stats live)
 │   ├── interviews.html         ← Liste de tous les entretiens
 │   ├── candidates.html         ← Tableau historique des candidats
 │   ├── reports.html            ← Stats + graphe décisions
@@ -50,39 +48,57 @@ deafhire/
 │   ├── join.html               ← Candidat : code + test caméra + validation
 │   ├── interview.html          ← Salle d'entretien WebSocket + WebRTC
 │   ├── css/
-│   │   ├── main.css            ← Design system global (dashboard, pages, transcript…)
+│   │   ├── main.css            ← Design system global
 │   │   └── interview.css       ← Layout dark de la salle d'entretien
-│   └── js/
-│       ├── auth.js             ← JWT, route guard, expiry watchdog auto-logout
-│       ├── app.js              ← Utilitaires globaux
-│       ├── interview.js        ← Contrôleur principal + WebRTC P2P
-│       ├── sign-detector.js    ← Détection LSF (MediaPipe Holistic + 14 signes)
-│       ├── speech.js           ← Reconnaissance vocale (Web Speech API)
-│       ├── avatar.js           ← Texte → mots-clés LSF
-│       └── ws-client.js        ← WebSocket (keep-alive, reconnexion expo, WebRTC relay)
+│   ├── js/
+│   │   ├── auth.js             ← JWT, route guard, expiry watchdog
+│   │   ├── app.js              ← Utilitaires globaux
+│   │   ├── interview.js        ← Contrôleur principal + WebRTC P2P
+│   │   ├── sign-detector.js    ← Détection LSF 3 couches (ML → règles)
+│   │   ├── sign-trainer.js     ← Trainer in-browser TF.js MLP (14 signes)
+│   │   ├── gesture-model.js    ← Classificateur landmarks pur JS (12 signes)
+│   │   ├── speech.js           ← Reconnaissance vocale (Web Speech API)
+│   │   ├── avatar.js           ← Texte → mots-clés LSF
+│   │   └── ws-client.js        ← WebSocket (keep-alive, reconnexion expo, WebRTC relay)
+│   └── assets/
+│       └── icons/
 ├── backend/
-│   ├── main.py                 ← FastAPI + lifespan (init DB)
+│   ├── main.py                 ← FastAPI + lifespan (init DB) + sert le frontend
 │   ├── database.py             ← SQLite WAL (sessions, users, transcripts)
 │   ├── requirements.txt
 │   ├── Dockerfile
-│   ├── core/config.py          ← Settings (pydantic-settings)
+│   ├── core/
+│   │   └── config.py           ← Settings (pydantic-settings)
 │   ├── routes/
 │   │   ├── auth.py             ← POST /auth/login, /auth/register, GET /auth/me
-│   │   ├── session.py          ← CRUD sessions + transcript + GET /validate/{id}
+│   │   ├── session.py          ← CRUD sessions + transcript
 │   │   ├── translation.py      ← POST /translate/sign, /translate/text
+│   │   ├── model.py            ← GET /model/status, /model/classes, /model/tfjs/*
 │   │   └── ws.py               ← WebSocket /ws/{session_id}/{role} + WebRTC relay
 │   ├── services/
 │   │   ├── auth.py             ← Hash mot de passe + JWT
 │   │   ├── sign_language.py    ← Traduction LSF → français
 │   │   ├── email.py            ← Envoi invitation SMTP
-│   │   └── nlp.py              ← Simplification texte + mots-clés
-│   └── models/schemas.py       ← Schémas Pydantic
+│   │   └── nlp.py              ← Simplification texte + mots-clés LSF
+│   └── models/
+│       └── schemas.py          ← Schémas Pydantic
 ├── ml/
+│   ├── requirements.txt
+│   ├── notebooks/              ← Exploration / expériences (Jupyter)
+│   ├── data/                   ← Datasets générés (ignorés par git)
+│   │   ├── dataset_lsf.json    ← Exemples YouTube (landmarks 126-dim)
+│   │   ├── dataset_sts.json    ← Exemples Spreadthesign (5 000+ signes)
+│   │   └── videos/             ← Vidéos téléchargées (ignorées par git)
+│   ├── model/                  ← Modèles entraînés (ignorés par git)
+│   │   ├── tfjs_model/         ← Export TF.js servi par le backend
+│   │   └── classes.json        ← Liste ordonnée des classes
 │   └── src/
-│       ├── collect_data.py         ← Collecte landmarks (webcam)
-│       ├── create_demo_model.py    ← Génère un modèle demo fonctionnel
-│       ├── train.py                ← Entraîne sur données réelles
-│       └── model.py                ← Classe d'inférence (ONNX / sklearn)
+│       ├── spreadthesign_scraper.py  ← Scrape Spreadthesign.com (5 916 signes LSF)
+│       ├── download_lsf_videos.py    ← Télécharge vidéos YouTube + extraction landmarks
+│       ├── collect_dataset.py        ← Collecte webcam/vidéo/images + augmentation ×7
+│       ├── record_all_signs.py       ← Enchaîne collect_dataset pour les 14 signes
+│       ├── train_large.py            ← Entraîne MLP 512→256→128, exporte TF.js
+│       └── create_demo_model.py      ← Génère un modèle demo rapide (données synthétiques)
 ├── docker-compose.yml
 ├── .env.example
 └── .gitignore
@@ -95,44 +111,35 @@ deafhire/
 ### Option A — Mode démo (sans installation)
 
 ```bash
-# Lancer un serveur HTTP dans le dossier frontend
 cd frontend
 python3 -m http.server 5500
 # Ouvrir http://localhost:5500
 ```
 
-Le frontend détecte automatiquement l'absence de backend et bascule en **mode démo** :
-- Détection LSF simulée (signes défilants)
+Le frontend bascule automatiquement en **mode démo** sans backend :
 - Auth locale (`admin@deafhire.fr` / `deafhire2026`)
-- Toutes les pages sont accessibles et fonctionnelles
+- Toutes les pages sont accessibles
 
 ---
 
-### Option B — Avec le backend complet
+### Option B — Backend complet
 
 ```bash
-# 1. Copier et configurer les variables d'environnement
+# 1. Variables d'environnement
 cp .env.example backend/.env
 
-# 2. Installer les dépendances backend
+# 2. Dépendances backend
 cd backend
 pip install -r requirements.txt
 
-# 3. (Optionnel) Générer le modèle ML demo
-cd ../ml
-python src/create_demo_model.py
-# → ml/model/lsf_model.pkl
-
-# 4. Lancer le serveur (port 8001 si 8000 est occupé par Docker)
-cd ../backend
+# 3. Lancer le serveur
 uvicorn main:app --reload --host 0.0.0.0 --port 8001
 ```
 
-Le backend démarre sur `http://localhost:8001`.
-- Doc API interactive : `http://localhost:8001/docs`
+- API interactive : `http://localhost:8001/docs`
 - Santé : `http://localhost:8001/health`
 
-> **Note :** Le frontend en mode dev (ports 5500/5501) pointe automatiquement vers `localhost:8001`. En production, il utilise l'origine de la page.
+> Le frontend en développement (ports 5500/5501) pointe automatiquement vers `localhost:8001`.
 
 ---
 
@@ -148,16 +155,16 @@ docker-compose up --build
 
 | Page | URL (démo) | Description |
 |---|---|---|
-| Landing | http://localhost:5500 | Accueil public |
-| Connexion | http://localhost:5500/login.html | Login recruteur |
-| Dashboard | http://localhost:5500/dashboard.html | Tableau de bord (protégé) |
-| Entretiens | http://localhost:5500/interviews.html | Liste complète des sessions |
-| Candidats | http://localhost:5500/candidates.html | Historique candidats |
-| Rapports | http://localhost:5500/reports.html | Stats & graphes |
-| Paramètres | http://localhost:5500/settings.html | Profil & préférences |
-| Détail session | http://localhost:5500/session-detail.html?session=XXX | Notes, décision, transcript |
-| Rejoindre | http://localhost:5500/join.html | Candidat : saisie code |
-| Entretien | http://localhost:5500/interview.html?role=recruiter&session=XXX | Salle d'entretien |
+| Landing | `http://localhost:5500` | Accueil public |
+| Connexion | `http://localhost:5500/login.html` | Login recruteur |
+| Dashboard | `http://localhost:5500/dashboard.html` | Tableau de bord |
+| Entretiens | `http://localhost:5500/interviews.html` | Liste des sessions |
+| Candidats | `http://localhost:5500/candidates.html` | Historique |
+| Rapports | `http://localhost:5500/reports.html` | Stats & graphes |
+| Paramètres | `http://localhost:5500/settings.html` | Profil & préférences |
+| Détail session | `http://localhost:5500/session-detail.html?session=XXX` | Notes, décision, transcript |
+| Rejoindre | `http://localhost:5500/join.html` | Candidat — saisie code |
+| Entretien | `http://localhost:5500/interview.html?role=recruiter&session=XXX` | Salle d'entretien |
 
 **Compte de démonstration :**
 ```
@@ -177,14 +184,44 @@ GET  /auth/me                     Infos utilisateur connecté
 POST /sessions                    Créer une session + envoi email
 GET  /sessions                    Lister les sessions du recruteur
 GET  /sessions/{id}               Détails d'une session
-PATCH /sessions/{id}              Mettre à jour (statut, décision, notes, ended_at)
-GET  /sessions/{id}/transcript    Récupérer le transcript (entries horodatées)
-GET  /sessions/validate/{id}      Valider un code session (public, sans auth)
+PATCH /sessions/{id}              Mettre à jour (statut, décision, notes)
+GET  /sessions/{id}/transcript    Récupérer le transcript horodaté
+GET  /sessions/validate/{id}      Valider un code session (public)
 
 POST /translate/sign              Keypoints MediaPipe → texte français
 POST /translate/text              Texte → simplifié + mots-clés LSF
 
+GET  /model/status                Vérifie si un grand modèle TF.js est disponible
+GET  /model/classes               Liste des classes du grand modèle
+GET  /model/tfjs/{filename}       Sert les fichiers du modèle TF.js
+
 WS   /ws/{session_id}/{role}      WebSocket temps réel (candidate | recruiter)
+```
+
+---
+
+## Architecture de détection LSF
+
+La détection fonctionne en **3 couches** — du plus précis au fallback :
+
+```
+Landmarks MediaPipe Holistic (21 pts × 2 mains)
+          │
+          ▼
+1. Grand modèle Python (TF.js, 500+ signes)
+   → chargé automatiquement depuis /model/ si le backend tourne
+   → entraîné sur Spreadthesign (5 916 signes LSF)
+          │ échec (modèle absent ou confiance < 0.65)
+          ▼
+2. TF.js in-browser (14 signes, localStorage)
+   → MLP 126→128→64→N, entraîné dans le navigateur
+   → l'utilisateur peut enregistrer ses propres exemples
+          │ échec
+          ▼
+3. GestureModel (pur JS, sans modèle)
+   → classifie la forme de la main (Open_Palm, Victory, Pointing…)
+   → contextualise avec position (front / menton / poitrine) + 2 mains
+   → couvre 12/14 signes, confiance 0.62–0.90
 ```
 
 ---
@@ -194,29 +231,87 @@ WS   /ws/{session_id}/{role}      WebSocket temps réel (candidate | recruiter)
 ```
 Candidat (navigateur)
   MediaPipe Holistic → landmarks mains + corps
-  Sign Detector → signe + confiance (auto-confirm 1,5 s)
-  → WS /ws/{id}/candidate  {type: "sign_keypoints", sign, confidence, keypoints}
-  → backend : SignLanguageService.translate() → "Bonjour, je suis ravi…"
-  → broadcast → Recruteur (affichage transcript + chat)
-  → DB : transcript entry persistée en temps réel
+  Sign Detector (3 couches) → signe + confiance (auto-confirm 1,5 s)
+  → WS /ws/{id}/candidate  {type:"sign_keypoints", sign, confidence}
+  → backend : SignLanguageService.translate() → phrase française
+  → broadcast → Recruteur (transcript + chat)
+  → DB : entry persistée en temps réel
 
 Recruteur (navigateur)
   Tape ou dicte (Web Speech API)
-  → WS /ws/{id}/recruiter  {type: "recruiter_message", text}
+  → WS /ws/{id}/recruiter  {type:"recruiter_message", text}
   → backend : NLPService.process() → texte simplifié + mots-clés LSF
   → broadcast → Candidat (chips LSF + texte clair)
-  → DB : transcript entry persistée en temps réel
+  → DB : entry persistée en temps réel
 
 WebRTC P2P (vidéo/audio)
   Signalement via le même WebSocket :
     webrtc_ready → webrtc_offer → webrtc_answer → webrtc_ice
-  Flux local : getUserMedia {video, audio}
-  Flux distant : affiché en overlay dans le panel candidat (remote-video)
 ```
 
 ---
 
-## Configuration SMTP (envoi d'emails)
+## Pipeline ML — Entraîner le grand modèle
+
+### Étape 1 — Télécharger les données
+
+**Option A : Spreadthesign (recommandé — 5 916 signes LSF)**
+
+```bash
+cd ml
+pip install -r requirements.txt
+
+# Lister tous les signes disponibles
+python src/spreadthesign_scraper.py list
+
+# Télécharger les vidéos et extraire les landmarks
+python src/spreadthesign_scraper.py all --limit 500
+
+# → ml/data/dataset_sts.json
+```
+
+**Option B : YouTube (yt-dlp)**
+
+```bash
+python src/download_lsf_videos.py Bonjour Merci Oui Non Travail
+
+# → ml/data/dataset_lsf.json
+```
+
+**Option C : Webcam**
+
+```bash
+python src/collect_dataset.py webcam --sign "Bonjour" --samples 150
+python src/record_all_signs.py   # enchaîne les 14 signes automatiquement
+```
+
+### Étape 2 — Entraîner
+
+```bash
+python src/train_large.py
+# ou avec options
+python src/train_large.py --data data/dataset_sts.json --epochs 200 --min-samples 20
+```
+
+Architecture : `126 → Dense(512) → BN → Drop(0.3) → Dense(256) → BN → Drop(0.25) → Dense(128) → Drop(0.2) → Dense(N, softmax)`
+
+Sorties :
+- `ml/model/tfjs_model/` — modèle chargeable par le navigateur
+- `ml/model/classes.json` — liste ordonnée des classes
+- `ml/model/report.txt` — rapport de précision par classe
+
+### Étape 3 — Servir
+
+```bash
+cd backend
+uvicorn main:app --reload --port 8001
+```
+
+Le frontend charge le modèle automatiquement depuis `/model/` au démarrage. Aucune configuration supplémentaire.
+
+---
+
+## Configuration SMTP
 
 Dans `backend/.env` :
 
@@ -229,37 +324,7 @@ SMTP_PASSWORD=mot_de_passe_application_google
 SMTP_FROM=noreply@deafhire.fr
 ```
 
-Sans configuration SMTP, le lien d'invitation est loggué en console (mode démo).
-
----
-
-## Pipeline ML — Entraîner votre propre modèle LSF
-
-### 1. Générer un modèle demo (immédiat)
-
-```bash
-cd ml
-python src/create_demo_model.py
-# → ml/model/lsf_model.pkl (RandomForest sur données synthétiques)
-```
-
-### 2. Collecter de vraies données
-
-```bash
-pip install mediapipe opencv-python scikit-learn
-
-python src/collect_data.py --sign "Bonjour" --samples 200
-python src/collect_data.py --sign "Merci"   --samples 200
-# ... répéter pour chaque signe (14 signes supportés)
-```
-
-### 3. Entraîner sur données réelles
-
-```bash
-python src/train.py --data data/keypoints.csv --output model/lsf_model.pkl
-```
-
-Le modèle est chargé automatiquement au démarrage du backend. Le frontend envoie également les landmarks bruts MediaPipe via WebSocket pour enrichir les données d'entraînement futures.
+Sans configuration SMTP, le lien d'invitation est loggué en console.
 
 ---
 
