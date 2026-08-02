@@ -9,7 +9,7 @@ export default function ProfilePage() {
     full_name: '',
     email: '',
     bio: '',
-    skills: [],
+    skills: [] as string[],
   });
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -82,10 +82,11 @@ export default function ProfilePage() {
   };
 
   const handleAddSkill = () => {
-    if (newSkill.trim() && !profile.skills.includes(newSkill)) {
+    const skills = profile.skills || [];
+    if (newSkill.trim() && !skills.includes(newSkill)) {
       setProfile({
         ...profile,
-        skills: [...profile.skills, newSkill]
+        skills: [...skills, newSkill]
       });
       setNewSkill('');
     }
@@ -184,7 +185,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {profile.skills && profile.skills.map((skill) => (
+            {(profile.skills || []).map((skill) => (
               <div
                 key={skill}
                 className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2"
