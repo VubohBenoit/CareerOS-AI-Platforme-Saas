@@ -17,6 +17,7 @@ import {
   Menu,
   X,
 } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function DashboardLayout({
   children,
@@ -77,10 +78,11 @@ export default function DashboardLayout({
             </Link>
           </div>
 
-          <div className="flex items-center space-x-6">
-            <span className="hidden sm:inline text-sm font-semibold text-slate-700">
+          <div className="flex items-center space-x-4">
+            <span className="hidden sm:inline text-sm font-semibold text-slate-700 dark:text-slate-300">
               {user?.full_name}
             </span>
+            <ThemeToggle />
             <Button
               onClick={handleLogout}
               className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all"

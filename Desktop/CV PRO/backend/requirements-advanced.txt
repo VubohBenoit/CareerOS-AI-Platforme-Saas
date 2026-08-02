@@ -1,0 +1,23 @@
+# Advanced Features
+redis==5.0.1
+reportlab==4.0.7
+pydantic-email-tools==2.0.0
+python-socketio==5.10.0
+python-engineio==4.8.0
+websockets==12.0
+stripe==7.4.0
+twilio==8.10.0
+
+# Monitoring
+prometheus-client==0.19.0
+python-json-logger==2.0.7
+
+# Analytics
+mixpanel==4.14.1
+google-analytics-python-api==4.4.0
+
+# WebRTC
+aiortc==1.5.0
+
+# Mobile notifications
+firebase-admin==6.2.0

@@ -1,0 +1,16 @@
+{
+  "name": "careerosai-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "test": "jest"
+  },
+  "dependencies": {
+    "react-native": "^0.72.0",
+    "react-native-webrtc": "^111.0.0",
+    "firebase": "^10.0.0"
+  }
+}
