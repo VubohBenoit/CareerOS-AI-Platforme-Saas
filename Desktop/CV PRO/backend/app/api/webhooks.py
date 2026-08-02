@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from typing import Dict, List
-from app.db import get_db
+from app.db.database import get_db
 import hashlib
 import hmac
 import json

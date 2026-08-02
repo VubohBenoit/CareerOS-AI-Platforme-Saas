@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime, timedelta
-from app.db import get_db
+from app.db.database import get_db
 from app.models.user import User
 from app.models.application import Application
 from app.models.job import Job
