@@ -2,27 +2,23 @@
 
 from fastapi import APIRouter
 from app.api.auth import router as auth_router
-
-# TODO: Import other routers as they're implemented
-# from app.api.profile import router as profile_router
-# from app.api.jobs import router as jobs_router
-# from app.api.applications import router as applications_router
-# from app.api.documents import router as documents_router
-# from app.api.interviews import router as interviews_router
-# from app.api.analytics import router as analytics_router
+from app.api.jobs import router as jobs_router
+from app.api.applications import router as applications_router
+from app.api.recommendations import router as recommendations_router
+from app.api.favorites import router as favorites_router
+from app.api.saved_searches import router as saved_searches_router
+from app.api.analytics import router as analytics_router
 
 router = APIRouter(prefix="/api/v1")
 
 # Include routers
 router.include_router(auth_router)
-
-# TODO: Uncomment as routers are implemented
-# router.include_router(profile_router, tags=["profile"])
-# router.include_router(jobs_router, tags=["jobs"])
-# router.include_router(applications_router, tags=["applications"])
-# router.include_router(documents_router, tags=["documents"])
-# router.include_router(interviews_router, tags=["interviews"])
-# router.include_router(analytics_router, tags=["analytics"])
+router.include_router(jobs_router)
+router.include_router(applications_router)
+router.include_router(recommendations_router)
+router.include_router(favorites_router)
+router.include_router(saved_searches_router)
+router.include_router(analytics_router)
 
 
 @router.get("/")

@@ -6,10 +6,11 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -19,20 +20,15 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, full_name: fullName }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        setError(data.detail || 'Login failed');
+        setError(data.detail || 'Signup failed');
         return;
       }
 
@@ -42,7 +38,6 @@ export default function LoginPage() {
       localStorage.setItem('user', JSON.stringify(data.user));
 
       router.push('/dashboard');
-
     } catch (err) {
       setError('An error occurred. Please try again.');
       console.error(err);
@@ -72,8 +67,8 @@ export default function LoginPage() {
 
         {/* Form Card */}
         <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 shadow-2xl">
-          <h2 className="text-2xl font-bold text-white mb-2">Welcome Back</h2>
-          <p className="text-slate-400 text-sm mb-6">Sign in to your CareerOS account</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Create Account</h2>
+          <p className="text-slate-400 text-sm mb-6">Join thousands finding their perfect role</p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
@@ -81,6 +76,22 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
+
+            <div className="space-y-2">
+              <label htmlFor="fullName" className="text-sm font-medium text-slate-300">
+                Full Name
+              </label>
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="John Doe"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                disabled={loading}
+                required
+                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
+              />
+            </div>
 
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium text-slate-300">
@@ -112,23 +123,24 @@ export default function LoginPage() {
                 required
                 className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
               />
+              <p className="text-xs text-slate-500">At least 8 characters</p>
             </div>
 
             <Button
               type="submit"
-              disabled={loading || !email || !password}
+              disabled={loading || !email || !password || !fullName}
               className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold h-11 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/50"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Creating account...' : 'Create Account'}
             </Button>
 
             <p className="text-center text-sm text-slate-400">
-              Don't have an account?{' '}
+              Already have an account?{' '}
               <Link
-                href="/signup"
+                href="/login"
                 className="font-semibold text-blue-400 hover:text-blue-300 transition-colors"
               >
-                Sign up
+                Sign in
               </Link>
             </p>
           </form>
@@ -136,7 +148,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-slate-500 mt-6">
-          By signing in, you agree to our{' '}
+          By signing up, you agree to our{' '}
           <Link href="#" className="text-slate-400 hover:text-slate-300">
             Terms of Service
           </Link>

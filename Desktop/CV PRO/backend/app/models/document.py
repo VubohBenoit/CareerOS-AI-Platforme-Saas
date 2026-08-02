@@ -23,7 +23,7 @@ class Document(Base):
     file_size = Column(String(50), nullable=True)
     mime_type = Column(String(100), nullable=True)
     status = Column(String(50), default="active", nullable=False)  # active, archived, deleted
-    metadata = Column(String(1000), nullable=True)  # JSON metadata
+    document_metadata = Column(String(1000), nullable=True)  # JSON metadata
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 

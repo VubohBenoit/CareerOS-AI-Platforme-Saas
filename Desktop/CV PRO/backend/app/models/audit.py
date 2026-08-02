@@ -1,8 +1,8 @@
 """Audit Logging Model (GDPR Compliance)"""
 
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime, ForeignKey, Index, Text
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Column, String, DateTime, ForeignKey, Index, Text, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
 
@@ -19,7 +19,7 @@ class AuditLog(Base):
     entity_type = Column(String(100), nullable=False)  # User, Profile, Application, etc.
     entity_id = Column(String(500), nullable=False)
     action = Column(String(50), nullable=False)  # create, read, update, delete
-    changes = Column(JSONB, nullable=True)  # Before/after values
+    changes = Column(JSON, nullable=True)  # Before/after values
     ip_address = Column(String(45), nullable=True)  # IPv4 or IPv6
     user_agent = Column(String(500), nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False, index=True)

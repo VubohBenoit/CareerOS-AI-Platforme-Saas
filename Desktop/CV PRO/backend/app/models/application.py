@@ -1,8 +1,8 @@
 """Application, ApplicationEmail, and Interview Models"""
 
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime, ForeignKey, Index, Text
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import JSON, Column, String, DateTime, ForeignKey, Index, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
 
@@ -27,9 +27,9 @@ class Application(Base):
     email_opened_at = Column(DateTime(timezone=True), nullable=True)
     recipient_email = Column(String(255), nullable=True)
     notes = Column(Text, nullable=True)
-    interviews = Column(JSONB, default=list, nullable=False)  # List of interview records
-    feedback = Column(JSONB, nullable=True)  # Interview feedback as JSON
-    tags = Column(JSONB, default=list, nullable=False)  # User-defined tags
+    interviews = Column(JSON, default=list, nullable=False)  # List of interview records
+    feedback = Column(JSON, nullable=True)  # Interview feedback as JSON
+    tags = Column(JSON, default=list, nullable=False)  # User-defined tags
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Float, Integer, ForeignKey, Index, Text, JSON
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
 
@@ -22,7 +22,7 @@ class Profile(Base):
     current_title = Column(String(255), nullable=True)
     years_experience = Column(Integer, nullable=True)
     preferred_contract = Column(String(50), nullable=True)  # CDI, freelance, stage, alternance
-    preferred_locations = Column(JSONB, default=list, nullable=False)  # List of locations
+    preferred_locations = Column(JSON, default=list, nullable=False)  # List of locations
     salary_min_expectations = Column(Integer, nullable=True)
     available_date = Column(DateTime(timezone=True), nullable=True)
     visa_sponsorship_required = Column(String(50), nullable=True)
@@ -56,8 +56,8 @@ class Experience(Base):
     start_date = Column(DateTime(timezone=True), nullable=False)
     end_date = Column(DateTime(timezone=True), nullable=True)
     description = Column(Text, nullable=True)
-    technologies = Column(JSONB, default=list, nullable=False)  # List of tech used
-    impact_metrics = Column(JSONB, nullable=True)  # JSON with metrics
+    technologies = Column(JSON, default=list, nullable=False)  # List of tech used
+    impact_metrics = Column(JSON, nullable=True)  # JSON with metrics
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     # Relationships
