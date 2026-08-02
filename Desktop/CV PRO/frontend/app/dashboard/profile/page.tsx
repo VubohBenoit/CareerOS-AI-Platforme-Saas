@@ -53,31 +53,62 @@ export default function ProfilePage() {
 
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      setMessage('❌ No file selected');
+      return;
+    }
 
     setLoading(true);
+    setMessage('Uploading...');
+
     try {
+      // Get user from localStorage
+      const userData = localStorage.getItem('user');
+      let userId = 'unknown';
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          userId = user.id || user.email || 'unknown';
+        } catch (e) {
+          console.log('Could not parse user data');
+        }
+      }
+
+      console.log('📤 Uploading file:', file.name, 'User ID:', userId);
+
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('user_id', localStorage.getItem('user_id') || 'unknown');
+      formData.append('user_id', userId);
 
-      const response = await fetch('http://localhost:8000/api/v1/documents/upload-resume', {
+      const apiUrl = 'http://localhost:8000/api/v1/documents/upload-resume';
+      console.log('📍 API URL:', apiUrl);
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData
       });
 
+      console.log('📊 Response status:', response.status);
+
+      const data = await response.json();
+      console.log('📦 Response data:', data);
+
       if (response.ok) {
-        const data = await response.json();
         setResume(data);
-        setMessage('✅ ' + data.message);
+        setMessage('✅ Resume uploaded successfully!');
         setTimeout(() => setMessage(''), 3000);
       } else {
-        setMessage('❌ Upload failed');
+        setMessage(`❌ Upload failed: ${data.detail || response.statusText}`);
       }
     } catch (error) {
+      console.error('❌ Upload error:', error);
       setMessage('❌ Error: ' + String(error));
     } finally {
       setLoading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 

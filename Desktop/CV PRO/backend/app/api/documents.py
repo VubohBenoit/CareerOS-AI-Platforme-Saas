@@ -1,9 +1,5 @@
-"""Document management - Resume/CV uploads"""
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
-from sqlalchemy.orm import Session
-from app.db.database import get_db
-from app.models.document import Document
-from app.models.user import User
+"""Document management - Resume/CV uploads (Simplified)"""
+from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 import os
 from datetime import datetime
 import shutil
@@ -15,135 +11,126 @@ MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
 # Ensure upload directory exists
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+print(f"✅ Documents API ready: {UPLOAD_DIR}")
 
 @router.post("/upload-resume")
 async def upload_resume(
     file: UploadFile = File(...),
-    user_id: str = None,
-    db: Session = Depends(get_db)
+    user_id: str = Form(default="unknown")
 ):
-    """Upload resume/CV file"""
-    
+    """Upload resume/CV file - Simple file storage without database"""
+
     try:
-        # Validate file
-        if not file.filename.endswith(('.pdf', '.doc', '.docx', '.txt')):
+        print(f"📤 Uploading file: {file.filename} for user: {user_id}")
+
+        # Validate file extension
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="No filename provided")
+
+        filename_lower = file.filename.lower()
+        allowed_extensions = ('.pdf', '.doc', '.docx', '.txt', '.py', '.js', '.json', '.md')
+
+        if not any(filename_lower.endswith(ext) for ext in allowed_extensions):
             raise HTTPException(
                 status_code=400,
-                detail="Only PDF, DOC, DOCX, TXT files allowed"
+                detail=f"File type not allowed. Allowed: {', '.join(allowed_extensions)}"
             )
-        
-        # Check file size
+
+        # Read file content
         contents = await file.read()
+
+        # Check file size
         if len(contents) > MAX_FILE_SIZE:
             raise HTTPException(
                 status_code=413,
-                detail=f"File too large (max {MAX_FILE_SIZE / 1024 / 1024}MB)"
+                detail=f"File too large (max {MAX_FILE_SIZE / 1024 / 1024:.1f}MB, got {len(contents) / 1024 / 1024:.1f}MB)"
             )
-        
+
+        if len(contents) == 0:
+            raise HTTPException(status_code=400, detail="File is empty")
+
         # Save file
-        file_path = os.path.join(UPLOAD_DIR, f"{user_id}_{file.filename}")
+        safe_filename = file.filename.replace(" ", "_")
+        file_path = os.path.join(UPLOAD_DIR, f"{user_id}_{safe_filename}")
+
+        print(f"💾 Saving to: {file_path}")
+
         with open(file_path, "wb") as f:
             f.write(contents)
-        
-        # Save to database
-        doc = Document(
-            id=f"doc_{datetime.now().timestamp()}",
-            user_id=user_id,
-            filename=file.filename,
-            file_path=file_path,
-            file_size=len(contents),
-            file_type=file.content_type,
-            uploaded_at=datetime.utcnow(),
-            document_metadata={"original_name": file.filename}
-        )
-        db.add(doc)
-        db.commit()
-        
+
+        # Verify file was saved
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=500, detail="Failed to save file")
+
+        file_size = os.path.getsize(file_path)
+
+        print(f"✅ File saved successfully: {file_path} ({file_size} bytes)")
+
         return {
             "status": "success",
             "filename": file.filename,
-            "file_size": len(contents),
+            "file_size": file_size,
             "upload_time": datetime.utcnow().isoformat(),
             "message": "✅ Resume uploaded successfully!"
         }
-    
+
+    except HTTPException as e:
+        print(f"❌ HTTP Error: {e.detail}")
+        raise e
     except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail=f"Upload failed: {str(e)}"
         )
 
 @router.get("/resume/{user_id}")
-async def get_resume(user_id: str, db: Session = Depends(get_db)):
-    """Get user's resume"""
-    
-    doc = db.query(Document).filter(Document.user_id == user_id).first()
-    
-    if not doc:
-        raise HTTPException(status_code=404, detail="Resume not found")
-    
-    return {
-        "filename": doc.filename,
-        "uploaded_at": doc.uploaded_at.isoformat(),
-        "file_size": doc.file_size,
-        "file_type": doc.file_type
-    }
+async def get_resume(user_id: str):
+    """Get user's resume info"""
+
+    try:
+        # Find resume files for user
+        if not os.path.exists(UPLOAD_DIR):
+            raise HTTPException(status_code=404, detail="No uploads directory")
+
+        files = [f for f in os.listdir(UPLOAD_DIR) if f.startswith(f"{user_id}_")]
+
+        if not files:
+            raise HTTPException(status_code=404, detail="Resume not found")
+
+        latest_file = files[-1]  # Get latest
+        file_path = os.path.join(UPLOAD_DIR, latest_file)
+        file_size = os.path.getsize(file_path)
+
+        return {
+            "filename": latest_file,
+            "file_size": file_size,
+            "uploaded_at": datetime.fromtimestamp(os.path.getmtime(file_path)).isoformat(),
+            "message": "✅ Resume found"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/resume/{user_id}")
-async def delete_resume(user_id: str, db: Session = Depends(get_db)):
+async def delete_resume(user_id: str):
     """Delete user's resume"""
-    
-    doc = db.query(Document).filter(Document.user_id == user_id).first()
-    
-    if not doc:
-        raise HTTPException(status_code=404, detail="Resume not found")
-    
-    # Delete file
-    if os.path.exists(doc.file_path):
-        os.remove(doc.file_path)
-    
-    # Delete from database
-    db.delete(doc)
-    db.commit()
-    
-    return {"status": "deleted", "message": "✅ Resume deleted"}
 
-@router.post("/extract-skills")
-async def extract_skills(
-    file: UploadFile = File(...),
-    user_id: str = None,
-    db: Session = Depends(get_db)
-):
-    """Upload resume and extract skills"""
-    
     try:
-        contents = await file.read()
-        
-        # Simple text extraction (in production, use proper PDF parsing)
-        text = contents.decode('utf-8', errors='ignore')
-        
-        # Mock skill extraction
-        skills = []
-        common_skills = [
-            "Python", "JavaScript", "React", "Node.js", "SQL",
-            "AWS", "Docker", "Git", "API", "REST", "GraphQL",
-            "Machine Learning", "Data Science", "FastAPI", "Django",
-            "TypeScript", "Next.js", "PostgreSQL", "MongoDB"
-        ]
-        
-        for skill in common_skills:
-            if skill.lower() in text.lower():
-                skills.append(skill)
-        
-        return {
-            "filename": file.filename,
-            "extracted_skills": skills if skills else ["Resume processed - add skills manually"],
-            "confidence": 0.85 if skills else 0.5,
-            "message": "✅ Skills extracted from resume"
-        }
-    
+        if not os.path.exists(UPLOAD_DIR):
+            raise HTTPException(status_code=404, detail="No uploads directory")
+
+        files = [f for f in os.listdir(UPLOAD_DIR) if f.startswith(f"{user_id}_")]
+
+        if not files:
+            raise HTTPException(status_code=404, detail="Resume not found")
+
+        for file in files:
+            file_path = os.path.join(UPLOAD_DIR, file)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+        return {"status": "deleted", "message": "✅ Resume deleted"}
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Skill extraction failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=str(e))
