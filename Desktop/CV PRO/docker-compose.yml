@@ -1,131 +1,27 @@
-version: '3.9'
+version: '3.8'
 
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: careeeros-db
-    environment:
-      POSTGRES_USER: careeeros
-      POSTGRES_PASSWORD: careeeros_dev_password
-      POSTGRES_DB: careeeros_ai
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U careeeros"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - careeeros-network
-
-  # Redis Cache & Queue
-  redis:
-    image: redis:7-alpine
-    container_name: careeeros-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - careeeros-network
-
-  # FastAPI Backend
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: careeeros-backend
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    environment:
-      DATABASE_URL: postgresql://careeeros:careeeros_dev_password@postgres:5432/careeeros_ai
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/0
-      CELERY_RESULT_BACKEND: redis://redis:6379/1
-      DEBUG: "True"
-      ENVIRONMENT: development
-      SECRET_KEY: dev-secret-key-not-for-production
-      LOG_LEVEL: INFO
+    build: ./backend
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - careeeros-network
-
-  # Celery Worker (Background Tasks)
-  celery:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: careeeros-celery
-    command: celery -A app.tasks worker --loglevel=info
     environment:
-      DATABASE_URL: postgresql://careeeros:careeeros_dev_password@postgres:5432/careeeros_ai
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/0
-      CELERY_RESULT_BACKEND: redis://redis:6379/1
-      DEBUG: "True"
+      DATABASE_URL: sqlite:///./careereos.db
+      SECRET_KEY: your-super-secret-key-change-in-production
+      JWT_EXPIRATION_HOURS: 24
     volumes:
       - ./backend:/app
-    depends_on:
-      - postgres
-      - redis
-      - backend
-    networks:
-      - careeeros-network
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-  # Celery Beat (Scheduled Tasks)
-  celery-beat:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: careeeros-celery-beat
-    command: celery -A app.tasks beat --loglevel=info
-    environment:
-      DATABASE_URL: postgresql://careeeros:careeeros_dev_password@postgres:5432/careeeros_ai
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/0
-      CELERY_RESULT_BACKEND: redis://redis:6379/1
-      DEBUG: "True"
-    volumes:
-      - ./backend:/app
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - careeeros-network
-
-  # Nginx Reverse Proxy
-  nginx:
-    image: nginx:alpine
-    container_name: careeeros-nginx
+  frontend:
+    build: ./frontend
     ports:
-      - "80:80"
-      - "443:443"
+      - "3007:3007"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
     volumes:
-      - ./infra/docker/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - backend
-    networks:
-      - careeeros-network
+      - ./frontend:/app
+    command: npm run dev -- -p 3007
 
 volumes:
-  postgres_data:
-  redis_data:
-
-networks:
-  careeeros-network:
-    driver: bridge
+  db:
