@@ -1,267 +1,262 @@
 'use client';
-
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-
-interface Profile {
-  id?: string;
-  phone?: string;
-  address?: string;
-  about_me?: string;
-  current_title?: string;
-  years_experience?: number;
-  preferred_contract?: string;
-  preferred_locations?: string[];
-  salary_min_expectations?: number;
-}
+import { Upload, FileText, Save, AlertCircle } from 'lucide-react';
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [profile, setProfile] = useState({
+    full_name: '',
+    email: '',
+    bio: '',
+    skills: [],
+  });
+  const [resume, setResume] = useState(null);
+  const [resumeFile, setResumeFile] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [newSkill, setNewSkill] = useState('');
 
   useEffect(() => {
-    fetchProfile();
+    // Load profile from localStorage
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setProfile(JSON.parse(userData));
+    }
   }, []);
 
-  const fetchProfile = async () => {
+  const handleSaveProfile = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const token = localStorage.getItem('access_token');
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/profile`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await fetch('http://localhost:8000/api/v1/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(profile)
+      });
 
       if (response.ok) {
-        const data = await response.json();
-        setProfile(data);
-      } else {
-        setProfile({});
-      }
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
-      setProfile({});
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setSaving(true);
-      const token = localStorage.getItem('access_token');
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/profile`,
-        {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(profile),
-        }
-      );
-
-      if (response.ok) {
-        setMessage('✅ Profile updated successfully!');
+        setMessage('✅ Profile saved successfully!');
         setTimeout(() => setMessage(''), 3000);
       } else {
         setMessage('❌ Failed to save profile');
       }
     } catch (error) {
-      console.error('Failed to save profile:', error);
-      setMessage('❌ Error saving profile');
+      setMessage('❌ Error: ' + String(error));
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="text-center py-12">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p className="text-slate-600 mt-4">Loading profile...</p>
-      </div>
-    );
-  }
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('user_id', localStorage.getItem('user_id') || 'unknown');
+
+      const response = await fetch('http://localhost:8000/api/v1/documents/upload-resume', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setResume(data);
+        setMessage('✅ ' + data.message);
+        setTimeout(() => setMessage(''), 3000);
+      } else {
+        setMessage('❌ Upload failed');
+      }
+    } catch (error) {
+      setMessage('❌ Error: ' + String(error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddSkill = () => {
+    if (newSkill.trim() && !profile.skills.includes(newSkill)) {
+      setProfile({
+        ...profile,
+        skills: [...profile.skills, newSkill]
+      });
+      setNewSkill('');
+    }
+  };
+
+  const handleRemoveSkill = (skill: string) => {
+    setProfile({
+      ...profile,
+      skills: profile.skills.filter(s => s !== skill)
+    });
+  };
 
   return (
-    <div className="space-y-8 max-w-2xl">
-      {/* Header */}
+    <div className="space-y-6">
       <div>
         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          Profile Settings
+          👤 Profile
         </h1>
-        <p className="text-slate-600 mt-2">
-          Complete your profile to get better recommendations
-        </p>
+        <p className="text-slate-600 mt-2">Manage your professional profile</p>
       </div>
 
-      {/* Success/Error Message */}
       {message && (
-        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg">
-          {message}
-        </div>
+        <Card className={`p-4 ${message.includes('✅') ? 'bg-green-50 border-2 border-green-200' : 'bg-red-50 border-2 border-red-200'}`}>
+          <p className={message.includes('✅') ? 'text-green-700' : 'text-red-700'}>{message}</p>
+        </Card>
       )}
 
-      {/* Profile Form */}
-      <form onSubmit={handleSave} className="space-y-6">
-        {/* Personal Info */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6">Personal Information</h2>
-
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
-                Current Job Title
-              </label>
-              <Input
-                placeholder="e.g., Senior React Developer"
-                value={profile?.current_title || ''}
-                onChange={(e) => setProfile({ ...profile!, current_title: e.target.value })}
-                className="border-slate-200"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
-                Phone
-              </label>
-              <Input
-                type="tel"
-                placeholder="+33 6 12 34 56 78"
-                value={profile?.phone || ''}
-                onChange={(e) => setProfile({ ...profile!, phone: e.target.value })}
-                className="border-slate-200"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
-                Address
-              </label>
-              <Input
-                placeholder="City, Country"
-                value={profile?.address || ''}
-                onChange={(e) => setProfile({ ...profile!, address: e.target.value })}
-                className="border-slate-200"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
-                About Me
-              </label>
-              <textarea
-                placeholder="Tell us about yourself..."
-                value={profile?.about_me || ''}
-                onChange={(e) => setProfile({ ...profile!, about_me: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                rows={4}
-              />
-            </div>
+      {/* Profile Info */}
+      <Card className="p-6 shadow-lg">
+        <h2 className="text-2xl font-bold mb-6">Basic Information</h2>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold mb-2">Full Name</label>
+            <input
+              type="text"
+              value={profile.full_name}
+              onChange={(e) => setProfile({...profile, full_name: e.target.value})}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg"
+              placeholder="John Doe"
+            />
           </div>
-        </div>
 
-        {/* Experience & Preferences */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6">Experience & Preferences</h2>
-
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-semibold text-slate-700 mb-2 block">
-                  Years of Experience
-                </label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="60"
-                  placeholder="5"
-                  value={profile?.years_experience || ''}
-                  onChange={(e) => setProfile({ ...profile!, years_experience: parseInt(e.target.value) })}
-                  className="border-slate-200"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-semibold text-slate-700 mb-2 block">
-                  Contract Type
-                </label>
-                <select
-                  value={profile?.preferred_contract || ''}
-                  onChange={(e) => setProfile({ ...profile!, preferred_contract: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                >
-                  <option value="">Select...</option>
-                  <option value="CDI">CDI (Permanent)</option>
-                  <option value="CDD">CDD (Contract)</option>
-                  <option value="FREELANCE">Freelance</option>
-                  <option value="STAGE">Internship</option>
-                  <option value="ALTERNANCE">Alternance</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
-                Min Salary Expectations (€)
-              </label>
-              <Input
-                type="number"
-                placeholder="50000"
-                value={profile?.salary_min_expectations || ''}
-                onChange={(e) => setProfile({ ...profile!, salary_min_expectations: parseInt(e.target.value) })}
-                className="border-slate-200"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-slate-700 mb-2 block">
-                Preferred Locations
-              </label>
-              <Input
-                placeholder="Paris, Remote, Lyon (comma-separated)"
-                value={(profile?.preferred_locations || []).join(', ')}
-                onChange={(e) => setProfile({ ...profile!, preferred_locations: e.target.value.split(',').map(l => l.trim()) })}
-                className="border-slate-200"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-semibold mb-2">Email</label>
+            <input
+              type="email"
+              value={profile.email}
+              disabled
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-100"
+            />
+            <p className="text-xs text-slate-500 mt-1">Email cannot be changed</p>
           </div>
-        </div>
 
-        {/* Skills Section */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-slate-900">Skills</h2>
-            <a href="/profile/resume" className="text-blue-600 hover:text-blue-700 font-medium">
-              Upload Resume →
-            </a>
+          <div>
+            <label className="block text-sm font-semibold mb-2">Bio</label>
+            <textarea
+              value={profile.bio || ''}
+              onChange={(e) => setProfile({...profile, bio: e.target.value})}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg h-24"
+              placeholder="Tell us about yourself..."
+            />
           </div>
-          <p className="text-slate-600">
-            Upload your resume to automatically extract and populate your skills.
-          </p>
-        </div>
 
-        {/* Save Button */}
-        <div className="flex gap-4">
           <Button
-            type="submit"
-            disabled={saving}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-3"
+            onClick={handleSaveProfile}
+            disabled={loading}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white"
           >
-            {saving ? 'Saving...' : 'Save Changes'}
+            <Save className="w-4 h-4 mr-2" />
+            {loading ? 'Saving...' : 'Save Profile'}
           </Button>
         </div>
-      </form>
+      </Card>
+
+      {/* Skills */}
+      <Card className="p-6 shadow-lg">
+        <h2 className="text-2xl font-bold mb-6">Skills</h2>
+        
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newSkill}
+              onChange={(e) => setNewSkill(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
+              className="flex-1 px-4 py-2 border border-slate-300 rounded-lg"
+              placeholder="Add a skill (e.g., Python, React)"
+            />
+            <Button
+              onClick={handleAddSkill}
+              className="bg-blue-600 text-white"
+            >
+              Add
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {profile.skills && profile.skills.map((skill) => (
+              <div
+                key={skill}
+                className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2"
+              >
+                {skill}
+                <button
+                  onClick={() => handleRemoveSkill(skill)}
+                  className="hover:text-red-600"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      {/* Resume Upload */}
+      <Card className="p-6 shadow-lg">
+        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          <FileText className="w-6 h-6" />
+          Resume
+        </h2>
+
+        <div className="space-y-4">
+          {resume ? (
+            <div className="bg-green-50 border-2 border-green-200 p-4 rounded-lg">
+              <p className="font-semibold text-green-700">✅ Resume Uploaded</p>
+              <p className="text-sm text-green-600 mt-2">
+                File: {resume.filename}
+              </p>
+              <p className="text-sm text-green-600">
+                Size: {(resume.file_size / 1024).toFixed(2)} KB
+              </p>
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-slate-300 p-8 rounded-lg text-center hover:bg-slate-50 transition">
+              <Upload className="w-12 h-12 text-slate-400 mx-auto mb-2" />
+              <p className="font-semibold text-slate-700">Upload Resume</p>
+              <p className="text-sm text-slate-500 mt-1">PDF, DOC, DOCX, or TXT (max 5MB)</p>
+            </div>
+          )}
+
+          <label>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.txt"
+              onChange={handleResumeUpload}
+              disabled={loading}
+              className="hidden"
+            />
+            <Button
+              as="span"
+              className="w-full bg-blue-600 text-white cursor-pointer"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {loading ? 'Uploading...' : resume ? 'Update Resume' : 'Upload Resume'}
+            </Button>
+          </label>
+        </div>
+      </Card>
+
+      {/* Info Box */}
+      <Card className="p-4 bg-blue-50 border-2 border-blue-200">
+        <div className="flex gap-3">
+          <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-blue-900">
+            <p className="font-semibold">💡 Tip</p>
+            <p className="mt-1">Keep your profile up-to-date! This helps us find better job matches for you.</p>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }

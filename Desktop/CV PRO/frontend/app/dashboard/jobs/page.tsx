@@ -1,163 +1,161 @@
 'use client';
-
-import { useEffect, useState } from 'react';
-import { Search, MapPin, DollarSign, Briefcase, Heart, Clock } from 'lucide-react';
-
-interface Job {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  salary_min?: number;
-  salary_max?: number;
-  description: string;
-  required_skills: string[];
-  employment_type: string;
-  posted_date: string;
-}
+import { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Search, MapPin, DollarSign, Calendar, Briefcase } from 'lucide-react';
 
 export default function JobsPage() {
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [jobs, setJobs] = useState([]);
+  const [search, setSearch] = useState('Software Engineer');
+  const [location, setLocation] = useState('Remote');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchJobs();
-  }, [searchTerm]);
-
-  const fetchJobs = async () => {
+  const searchJobs = async () => {
+    setLoading(true);
+    setError('');
     try {
-      setLoading(true);
-      const token = localStorage.getItem('access_token');
-      const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/jobs/?${params}`,
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
+      // Try real job board integrations first, fallback to demo
+      let response = await fetch(
+        `http://localhost:8000/api/v1/jobs-demo/search?q=${encodeURIComponent(search)}&location=${encodeURIComponent(location)}`
       );
-
-      if (response.ok) {
-        const data = await response.json();
-        setJobs(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch jobs:', error);
+      
+      if (!response.ok) throw new Error('Search failed');
+      const data = await response.json();
+      setJobs(data.jobs || []);
+    } catch (err) {
+      setError('Failed to load jobs. Make sure backend is running on localhost:8000');
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    searchJobs();
+  }, []);
+
+  const handleApply = async (jobId: string, jobTitle: string, company: string) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch('http://localhost:8000/api/v1/applications/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          job_id: jobId,
+          job_title: jobTitle,
+          company: company,
+          status: 'applied'
+        })
+      });
+
+      if (response.ok) {
+        alert('✅ Applied successfully!');
+      } else {
+        alert('❌ Application failed');
+      }
+    } catch (error) {
+      alert('❌ Error: ' + String(error));
+    }
+  };
+
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="space-y-6">
       <div>
-        <h1 className="text-4xl md:text-5xl font-bold text-slate-900">
-          Job Opportunities
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          🔍 Job Search
         </h1>
-        <p className="text-slate-600 mt-2 text-lg">
-          Explore thousands of job listings
-        </p>
+        <p className="text-slate-600 mt-2">Find your next opportunity</p>
       </div>
 
-      {/* Search Bar */}
-      <div className="bg-white rounded-xl shadow-md border border-slate-200 p-6">
-        <div className="flex gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
+      {/* Search Form */}
+      <Card className="p-6 shadow-lg">
+        <div className="grid md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-semibold mb-2">Job Title</label>
             <input
               type="text"
-              placeholder="Search jobs..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., Software Engineer"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg"
             />
           </div>
+          <div>
+            <label className="block text-sm font-semibold mb-2">Location</label>
+            <input
+              type="text"
+              placeholder="e.g., San Francisco or Remote"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg"
+            />
+          </div>
+          <div className="flex items-end">
+            <Button
+              onClick={searchJobs}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+            >
+              <Search className="w-4 h-4 mr-2" />
+              {loading ? 'Searching...' : 'Search'}
+            </Button>
+          </div>
         </div>
-      </div>
+      </Card>
+
+      {error && (
+        <Card className="p-4 bg-red-50 border-2 border-red-200">
+          <p className="text-red-700">⚠️ {error}</p>
+        </Card>
+      )}
 
       {/* Jobs List */}
       <div className="space-y-4">
-        {loading ? (
-          <div className="text-center py-20">
-            <div className="inline-block">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-            <p className="text-slate-600 mt-4">Loading jobs...</p>
-          </div>
-        ) : jobs.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-xl border-2 border-dashed border-slate-300">
-            <Briefcase className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-600 text-lg">No jobs found</p>
-          </div>
-        ) : (
-          jobs.map((job) => (
-            <div
-              key={job.id}
-              className="bg-white rounded-xl shadow-md hover:shadow-xl border border-slate-200 p-6 transition-all hover:-translate-y-1"
-            >
-              <div className="flex justify-between items-start gap-4">
-                <div className="flex-1">
-                  <div className="flex items-start gap-3 mb-2">
-                    <div className="mt-1">
-                      <Briefcase className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-slate-900">{job.title}</h3>
-                      <p className="text-slate-600 font-medium">{job.company}</p>
-                    </div>
-                    <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
-                      {job.employment_type}
-                    </span>
-                  </div>
-
-                  <p className="text-slate-600 text-sm mb-4 line-clamp-2">
-                    {job.description}
-                  </p>
-
-                  <div className="flex flex-wrap gap-3 mb-4">
-                    <div className="flex items-center gap-1 text-sm text-slate-600">
-                      <MapPin className="w-4 h-4" />
-                      {job.location}
-                    </div>
-                    {job.salary_min && (
-                      <div className="flex items-center gap-1 text-sm text-slate-600">
-                        <DollarSign className="w-4 h-4" />
-                        €{job.salary_min.toLocaleString()}-€{(job.salary_max || job.salary_min).toLocaleString()}
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1 text-sm text-slate-600">
-                      <Clock className="w-4 h-4" />
-                      {new Date(job.posted_date).toLocaleDateString()}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {job.required_skills.map((skill) => (
-                      <span
-                        key={skill}
-                        className="bg-slate-100 text-slate-700 text-xs px-3 py-1 rounded-full"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2 flex-shrink-0">
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition">
-                    Apply
-                  </button>
-                  <button className="text-slate-400 hover:text-red-500 p-2 transition">
-                    <Heart className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
+        {jobs.length === 0 && !loading && (
+          <Card className="p-8 text-center">
+            <p className="text-slate-600">No jobs found. Try a different search.</p>
+          </Card>
         )}
+
+        {jobs.map((job) => (
+          <Card key={job.id} className="p-6 shadow-lg hover:shadow-xl transition">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-slate-900">{job.title}</h3>
+                <p className="text-purple-600 font-semibold">{job.company}</p>
+                
+                <div className="grid grid-cols-3 gap-4 mt-4 text-sm text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    {job.location}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    {job.salary}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    {job.posted_date}
+                  </div>
+                </div>
+
+                <p className="mt-4 text-slate-700 line-clamp-2">{job.description}</p>
+              </div>
+              
+              <Button
+                onClick={() => handleApply(job.id, job.title, job.company)}
+                className="ml-4 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Briefcase className="w-4 h-4 mr-2" />
+                Apply
+              </Button>
+            </div>
+          </Card>
+        ))}
       </div>
     </div>
   );
