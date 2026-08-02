@@ -12,7 +12,6 @@ export default function ProfilePage() {
     skills: [],
   });
   const [resume, setResume] = useState(null);
-  const [resumeFile, setResumeFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [newSkill, setNewSkill] = useState('');
@@ -124,7 +123,7 @@ export default function ProfilePage() {
               type="text"
               value={profile.full_name}
               onChange={(e) => setProfile({...profile, full_name: e.target.value})}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-black dark:text-white dark:bg-slate-700"
               placeholder="John Doe"
             />
           </div>
@@ -135,7 +134,7 @@ export default function ProfilePage() {
               type="email"
               value={profile.email}
               disabled
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-100"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
             />
             <p className="text-xs text-slate-500 mt-1">Email cannot be changed</p>
           </div>
@@ -145,7 +144,7 @@ export default function ProfilePage() {
             <textarea
               value={profile.bio || ''}
               onChange={(e) => setProfile({...profile, bio: e.target.value})}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg h-24"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg h-24 text-black dark:text-white dark:bg-slate-700"
               placeholder="Tell us about yourself..."
             />
           </div>
@@ -171,8 +170,8 @@ export default function ProfilePage() {
               type="text"
               value={newSkill}
               onChange={(e) => setNewSkill(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
-              className="flex-1 px-4 py-2 border border-slate-300 rounded-lg"
+              onKeyDown={(e) => e.key === 'Enter' && handleAddSkill()}
+              className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-black dark:text-white dark:bg-slate-700"
               placeholder="Add a skill (e.g., Python, React)"
             />
             <Button
@@ -228,7 +227,7 @@ export default function ProfilePage() {
             </div>
           )}
 
-          <label>
+          <label className="w-full cursor-pointer">
             <input
               type="file"
               accept=".pdf,.doc,.docx,.txt"
@@ -236,13 +235,10 @@ export default function ProfilePage() {
               disabled={loading}
               className="hidden"
             />
-            <Button
-              as="span"
-              className="w-full bg-blue-600 text-white cursor-pointer"
-            >
-              <Upload className="w-4 h-4 mr-2" />
+            <div className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition">
+              <Upload className="w-4 h-4" />
               {loading ? 'Uploading...' : resume ? 'Update Resume' : 'Upload Resume'}
-            </Button>
+            </div>
           </label>
         </div>
       </Card>
