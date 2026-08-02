@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Upload, FileText, Save, AlertCircle } from 'lucide-react';
@@ -15,6 +15,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [newSkill, setNewSkill] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Load profile from localStorage
@@ -227,19 +228,21 @@ export default function ProfilePage() {
             </div>
           )}
 
-          <label className="w-full cursor-pointer">
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx,.txt"
-              onChange={handleResumeUpload}
-              disabled={loading}
-              className="hidden"
-            />
-            <div className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition">
-              <Upload className="w-4 h-4" />
-              {loading ? 'Uploading...' : resume ? 'Update Resume' : 'Upload Resume'}
-            </div>
-          </label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.doc,.docx,.txt"
+            onChange={handleResumeUpload}
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={loading}
+            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition"
+          >
+            <Upload className="w-4 h-4" />
+            {loading ? 'Uploading...' : resume ? 'Update Resume' : 'Upload Resume'}
+          </button>
         </div>
       </Card>
 
